@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"chainguard.dev/axsdump/pkg/axs"
 
@@ -17,6 +18,7 @@ var (
 	googleWorkspaceUsersCSVFlag = flag.String("google-workspace-users-csv", "", "Path to Google Workspace Users CSV (live)")
 	githubOrgMembersCSVFlag     = flag.String("github-org-members-csv", "", "Path to Github Org Members CSV")
 	slackMembersCSVFlag         = flag.String("slack-members-csv", "", "Path to Slack Members CSV")
+	kolideUsersCSVFlag          = flag.String("kolide-users-csv", "", "Path to Kolide Users CSV")
 	outDirFlag                  = flag.String("out-dir", "", "output YAML files to this directory")
 )
 
@@ -61,7 +63,24 @@ func main() {
 		artifacts = append(artifacts, a)
 	}
 
+	if *kolideUsersCSVFlag != "" {
+		a, err := axs.KolideUsers(*kolideUsersCSVFlag)
+		if err != nil {
+			klog.Exitf("kolide users: %v", err)
+		}
+
+		artifacts = append(artifacts, a)
+	}
+
 	for _, a := range artifacts {
+		// Make the output more deterministic
+		sort.Slice(a.Users, func(i, j int) bool {
+			return a.Users[i].Account < a.Users[j].Account
+		})
+		sort.Slice(a.Bots, func(i, j int) bool {
+			return a.Bots[i].Account < a.Bots[j].Account
+		})
+
 		bs, err := yaml.Marshal(a)
 		if err != nil {
 			klog.Exitf("encode: %v", err)

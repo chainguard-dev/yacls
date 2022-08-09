@@ -13,7 +13,7 @@ type Artifact struct {
 	Metadata     *Source
 	ByPermission map[string][]string `yaml:",omitempty"`
 	Users        []User
-	Bots         []User
+	Bots         []User `yaml:",omitempty"`
 }
 
 type User struct {
