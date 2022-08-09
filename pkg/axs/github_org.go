@@ -45,6 +45,12 @@ func GithubOrgMembers(path string) (*Artifact, error) {
 		if r.Role != "Member" {
 			u.Permissions = []string{r.Role}
 		}
+
+		if strings.HasSuffix(u.Name, "Bot") || strings.HasSuffix(u.Account, "Bot") {
+			a.Bots = append(a.Bots, u)
+			continue
+		}
+
 		a.Users = append(a.Users, u)
 	}
 

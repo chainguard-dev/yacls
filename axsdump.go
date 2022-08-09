@@ -16,6 +16,7 @@ var (
 	googleWorkspaceAuditCSVFlag = flag.String("google-workspace-audit-csv", "", "Path to Google Workspace Audit CSV (delayed)")
 	googleWorkspaceUsersCSVFlag = flag.String("google-workspace-users-csv", "", "Path to Google Workspace Users CSV (live)")
 	githubOrgMembersCSVFlag     = flag.String("github-org-members-csv", "", "Path to Github Org Members CSV")
+	slackMembersCSVFlag         = flag.String("slack-members-csv", "", "Path to Slack Members CSV")
 	outDirFlag                  = flag.String("out-dir", "", "output YAML files to this directory")
 )
 
@@ -51,6 +52,15 @@ func main() {
 		artifacts = append(artifacts, a)
 	}
 
+	if *slackMembersCSVFlag != "" {
+		a, err := axs.SlackMembers(*slackMembersCSVFlag)
+		if err != nil {
+			klog.Exitf("slack members: %v", err)
+		}
+
+		artifacts = append(artifacts, a)
+	}
+
 	for _, a := range artifacts {
 		bs, err := yaml.Marshal(a)
 		if err != nil {
@@ -59,7 +69,7 @@ func main() {
 
 		if *outDirFlag != "" {
 			outPath := filepath.Join(*outDirFlag, a.Metadata.Kind+".yaml")
-			err := os.WriteFile(outPath, bs, 0o700)
+			err := os.WriteFile(outPath, bs, 0o600)
 			if err != nil {
 				klog.Exitf("writefile: %w", err)
 			}
