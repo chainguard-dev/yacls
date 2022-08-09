@@ -28,7 +28,4 @@ go run . \
 
 ## Coming soon
 
-* 1Password
-* Copper
-* Justworks
-* Webflow
+* GCP (gcloud)
