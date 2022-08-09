@@ -20,6 +20,7 @@ var (
 	slackMembersCSVFlag         = flag.String("slack-members-csv", "", "Path to Slack Members CSV")
 	kolideUsersCSVFlag          = flag.String("kolide-users-csv", "", "Path to Kolide Users CSV")
 	vercelMembersHTMLFlag       = flag.String("vercel-members-html", "", "Path to Vercel Members HTML")
+	ghostStaffHTMLFlag          = flag.String("ghost-staff-html", "", "Path to Ghost Staff HTML")
 	outDirFlag                  = flag.String("out-dir", "", "output YAML files to this directory")
 )
 
@@ -77,6 +78,15 @@ func main() {
 		a, err := axs.VercelMembers(*vercelMembersHTMLFlag)
 		if err != nil {
 			klog.Exitf("vercel users: %v", err)
+		}
+
+		artifacts = append(artifacts, a)
+	}
+
+	if *ghostStaffHTMLFlag != "" {
+		a, err := axs.GhostStaff(*ghostStaffHTMLFlag)
+		if err != nil {
+			klog.Exitf("ghost staff: %v", err)
 		}
 
 		artifacts = append(artifacts, a)
