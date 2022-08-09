@@ -21,7 +21,9 @@ var (
 	kolideUsersCSVFlag          = flag.String("kolide-users-csv", "", "Path to Kolide Users CSV")
 	vercelMembersHTMLFlag       = flag.String("vercel-members-html", "", "Path to Vercel Members HTML")
 	ghostStaffHTMLFlag          = flag.String("ghost-staff-html", "", "Path to Ghost Staff HTML")
-	outDirFlag                  = flag.String("out-dir", "", "output YAML files to this directory")
+	secureframePersonnelCSVFlag = flag.String("secureframe-personnel-csv", "", "Path to Secureframe Personnel CSV")
+
+	outDirFlag = flag.String("out-dir", "", "output YAML files to this directory")
 )
 
 func main() {
@@ -87,6 +89,15 @@ func main() {
 		a, err := axs.GhostStaff(*ghostStaffHTMLFlag)
 		if err != nil {
 			klog.Exitf("ghost staff: %v", err)
+		}
+
+		artifacts = append(artifacts, a)
+	}
+
+	if *secureframePersonnelCSVFlag != "" {
+		a, err := axs.SecureframePersonnel(*secureframePersonnelCSVFlag)
+		if err != nil {
+			klog.Exitf("secureframe personnel: %v", err)
 		}
 
 		artifacts = append(artifacts, a)

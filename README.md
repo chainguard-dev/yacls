@@ -6,7 +6,7 @@ Automate data collection for user access reviews.
 
 Turn a pile of CSV and HTML pages into a directory full of easily auditable YAML files.
 
-```
+```shell
 go run . \
   --google-workspace-users-csv=$HOME/Downloads/User_Download_09082022_132441.csv \
   --google-workspace-audit-csv=$HOME/Downloads/users_logs_1660017600000.csv \
@@ -15,3 +15,20 @@ go run . \
   --kolide-users-csv=$HOME/Downloads/Users\ \ Access\ ·\ Kolide\ \(2\).csv \
   --out-dir=/tmp
 ```
+
+## Supported Data Sources
+
+* Ghost Blog Staff (HTML)
+* Github Org Members (CSV)
+* Google Workspace (CSV)
+* Kolide (CSV)
+* Secureframe (CSV)
+* Slack (CSV)
+* Vercel (HTML)
+
+## Coming soon
+
+* 1Password
+* Copper
+* Justworks
+* Webflow
