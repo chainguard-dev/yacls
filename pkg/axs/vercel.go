@@ -3,6 +3,7 @@ package axs
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/text/cases"
@@ -10,7 +11,10 @@ import (
 )
 
 var vercelSteps = []string{
-	"Open https://webflow.com/dashboard/sites/<site name>/members",
+	"Open https://vercel.com/",
+	"Select your company/team",
+	"Click 'Settings'",
+	"Click 'Members'",
 	"Save this page (Complete)",
 	"Execute 'axsdump --vercel-members-html=<path.html>'",
 }
@@ -34,10 +38,13 @@ func VercelMembers(path string) (*Artifact, error) {
 
 	// Find the members
 	doc.Find("div[data-geist-entity]").Each(func(i int, s *goquery.Selection) {
+		fmt.Printf("attr=%s\n", s.AttrOr("data-testid", "unknown"))
+
 		email := s.Find("p[type=secondary]").Text()
 		roles := []string{}
 
 		s.Find("option").Each(func(i int, opt *goquery.Selection) {
+			fmt.Printf("opt=%s\n", opt.Text())
 			roles = append(roles, opt.Text())
 		})
 
@@ -56,7 +63,8 @@ func VercelMembers(path string) (*Artifact, error) {
 		role := roles[0]
 
 		if len(roles) > 1 {
-			role = roles[len(roles)-1]
+			// At the moment, we can't tell which option is selected
+			role = strings.Join(roles, " or ")
 		}
 
 		a.Users = append(a.Users, User{Account: email, Role: role})
