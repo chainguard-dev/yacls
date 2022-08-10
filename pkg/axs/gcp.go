@@ -57,7 +57,6 @@ func NewGCPMemberCache() gcpMemberCache {
 // expandGCPMembers expands groups into lists of users.
 func expandGCPMembers(identity string, project string, cache gcpMemberCache) ([]gcpGroupMembership, error) {
 	if cache[identity] != nil {
-		klog.Infof("returning cache for %s: %+v", identity, cache[identity])
 		return cache[identity], nil
 	}
 
@@ -92,7 +91,7 @@ func expandGCPMembers(identity string, project string, cache gcpMemberCache) ([]
 	return memberships, nil
 }
 
-// GCP returns multiple roles for a group membership, but only the highest has any meaning
+// GCP returns multiple roles for a group membership, but only the highest has any meaning.
 func highestGCPRoleType(types []gcpRoleType) string {
 	highest := ""
 
@@ -189,8 +188,9 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 					}
 
 					if e.Expanded && !seen[entity][m] {
+						_, id, _ := strings.Cut(m, ":")
 						em := Membership{
-							Name: m,
+							Name: id,
 						}
 						em.Role = highestGCPRoleType(e.Roles)
 						users[entity].Groups = append(users[entity].Groups, em)
@@ -202,7 +202,6 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 	}
 
 	for _, u := range users {
-
 		if strings.HasPrefix(u.Account, "domain:") {
 			continue
 		}

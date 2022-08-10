@@ -5,18 +5,18 @@ import (
 	"os"
 	"os/user"
 	"sort"
-	"strings"
 	"time"
 )
 
 var SourceDateFormat = "2006-01-02"
 
 type Artifact struct {
-	Metadata *Source
-	Users    []User
-	Bots     []User                  `yaml:",omitempty"`
-	ByRole   map[string][]string     `yaml:"by-role,omitempty"`
-	ByGroup  map[string][]Membership `yaml:"by-group,omitempty"`
+	Metadata  *Source
+	UserCount int `yaml:"user_count"`
+	Users     []User
+	Bots      []User                  `yaml:",omitempty"`
+	ByRole    map[string][]string     `yaml:"by-role,omitempty"`
+	ByGroup   map[string][]Membership `yaml:"by-group,omitempty"`
 }
 
 type User struct {
@@ -29,9 +29,10 @@ type User struct {
 }
 
 type Membership struct {
-	Name  string   `yaml:",omitempty"`
-	Role  string   `yaml:",omitempty"`
-	Roles []string `yaml:",omitempty"`
+	Name        string   `yaml:",omitempty"`
+	Description string   `yaml:",omitempty"`
+	Role        string   `yaml:",omitempty"`
+	Roles       []string `yaml:",omitempty"`
 }
 
 type Source struct {
@@ -90,30 +91,32 @@ func FinalizeArtifact(a *Artifact) {
 		return a.Bots[i].Account < a.Bots[j].Account
 	})
 
-	roleMap := map[string][]string{}
-	for i, u := range a.Users {
-		if u.Role == "" {
-			continue
-		}
-		a.Users[i].Role = strings.ToLower(u.Role)
-		k := a.Users[i].Role
-		if roleMap[k] == nil {
-			roleMap[k] = []string{}
-		}
-		roleMap[k] = append(roleMap[k], u.Account)
-	}
+	a.UserCount = len(a.Users)
+	a.ByGroup = map[string][]Membership{}
+	a.ByRole = map[string][]string{}
 
-	for i, u := range a.Bots {
-		if u.Role == "" {
-			continue
-		}
-		a.Bots[i].Role = strings.ToLower(u.Role)
-		k := a.Bots[i].Role
-		if roleMap[k] == nil {
-			roleMap[k] = []string{}
-		}
-		roleMap[k] = append(roleMap[k], u.Account)
-	}
+	allUsers := []User{}
+	allUsers = append(allUsers, a.Users...)
+	allUsers = append(allUsers, a.Bots...)
 
-	a.ByRole = roleMap
+	for _, u := range allUsers {
+		for _, g := range u.Groups {
+			if a.ByGroup[g.Name] == nil {
+				a.ByGroup[g.Name] = []Membership{}
+			}
+			a.ByGroup[g.Name] = append(a.ByGroup[g.Name], Membership{Name: u.Account, Role: g.Role, Roles: g.Roles})
+		}
+
+		roles := u.Roles
+		if len(roles) == 0 && u.Role != "" {
+			roles = []string{u.Role}
+		}
+
+		for _, r := range roles {
+			if a.ByRole[r] == nil {
+				a.ByRole[r] = []string{}
+			}
+			a.ByRole[r] = append(a.ByRole[r], u.Account)
+		}
+	}
 }
