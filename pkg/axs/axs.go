@@ -38,7 +38,7 @@ type Membership struct {
 type Source struct {
 	Kind        string
 	Name        string
-	ID          string
+	ID          string    `yaml:",omitempty"`
 	SourceDate  string    `yaml:"source_date,omitempty"`
 	GeneratedAt time.Time `yaml:"generated_at"`
 	GeneratedBy string    `yaml:"generated_by"`

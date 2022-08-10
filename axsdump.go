@@ -21,6 +21,7 @@ var (
 	kolideUsersCSVFlag          = flag.String("kolide-users-csv", "", "Path to Kolide Users CSV")
 	vercelMembersHTMLFlag       = flag.String("vercel-members-html", "", "Path to Vercel Members HTML")
 	ghostStaffHTMLFlag          = flag.String("ghost-staff-html", "", "Path to Ghost Staff HTML")
+	webflowMembersHTMLFlag      = flag.String("webflow-members-html", "", "Path to Ghost Members HTML")
 	secureframePersonnelCSVFlag = flag.String("secureframe-personnel-csv", "", "Path to Secureframe Personnel CSV")
 	gcpIAMProjectsFlag          = flag.String("gcp-iam-projects", "", "Comma-separated list of GCP projects to fetch IAM policies for")
 	gcpIdentityProject          = flag.String("gcp-identity-project", "", "Optional GCP project for group resolution (requires cloudidentity API)")
@@ -81,6 +82,15 @@ func main() {
 		a, err := axs.VercelMembers(*vercelMembersHTMLFlag)
 		if err != nil {
 			klog.Exitf("vercel users: %v", err)
+		}
+
+		artifacts = append(artifacts, a)
+	}
+
+	if *webflowMembersHTMLFlag != "" {
+		a, err := axs.WebflowMembers(*webflowMembersHTMLFlag)
+		if err != nil {
+			klog.Exitf("webflow users: %v", err)
 		}
 
 		artifacts = append(artifacts, a)

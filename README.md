@@ -26,7 +26,4 @@ go run . \
 * Secureframe (CSV)
 * Slack (CSV)
 * Vercel (HTML)
-
-## Coming soon
-
-* Webflow
+* Webflow (HTML)

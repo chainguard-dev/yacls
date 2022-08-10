@@ -10,10 +10,7 @@ import (
 )
 
 var vercelSteps = []string{
-	"Open https://vercel.com/",
-	"Select your company/team",
-	"Click 'Settings'",
-	"Click 'Members'",
+	"Open https://webflow.com/dashboard/sites/<site name>/members",
 	"Save this page (Complete)",
 	"Execute 'axsdump --vercel-members-html=<path.html>'",
 }
@@ -35,15 +32,12 @@ func VercelMembers(path string) (*Artifact, error) {
 		return nil, fmt.Errorf("document: %w", err)
 	}
 
-	// Find the review items
+	// Find the members
 	doc.Find("div[data-geist-entity]").Each(func(i int, s *goquery.Selection) {
-		fmt.Printf("attr=%s\n", s.AttrOr("data-testid", "unknown"))
-
 		email := s.Find("p[type=secondary]").Text()
 		roles := []string{}
 
 		s.Find("option").Each(func(i int, opt *goquery.Selection) {
-			fmt.Printf("opt=%s\n", opt.Text())
 			roles = append(roles, opt.Text())
 		})
 
