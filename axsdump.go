@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 
 	"chainguard.dev/axsdump/pkg/axs"
 
@@ -104,13 +103,7 @@ func main() {
 	}
 
 	for _, a := range artifacts {
-		// Make the output more deterministic
-		sort.Slice(a.Users, func(i, j int) bool {
-			return a.Users[i].Account < a.Users[j].Account
-		})
-		sort.Slice(a.Bots, func(i, j int) bool {
-			return a.Bots[i].Account < a.Bots[j].Account
-		})
+		axs.FinalizeArtifact(a)
 
 		bs, err := yaml.Marshal(a)
 		if err != nil {

@@ -37,9 +37,9 @@ func KolideUsers(path string) (*Artifact, error) {
 
 	for _, r := range records {
 		u := User{
-			Account:     r.Email,
-			Name:        strings.TrimSpace(r.Name),
-			Permissions: []string{r.Permissions},
+			Account: r.Email,
+			Name:    strings.TrimSpace(r.Name),
+			Role:    r.Permissions,
 		}
 
 		a.Users = append(a.Users, u)

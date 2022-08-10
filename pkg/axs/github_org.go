@@ -40,10 +40,7 @@ func GithubOrgMembers(path string) (*Artifact, error) {
 		u := User{
 			Account: r.Login,
 			Name:    strings.TrimSpace(r.Name),
-		}
-
-		if r.Role != "Member" {
-			u.Permissions = []string{r.Role}
+			Role:    r.Role,
 		}
 
 		if strings.HasSuffix(u.Name, "Bot") || strings.HasSuffix(u.Account, "Bot") {

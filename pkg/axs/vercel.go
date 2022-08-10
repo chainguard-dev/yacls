@@ -65,7 +65,7 @@ func VercelMembers(path string) (*Artifact, error) {
 			role = roles[len(roles)-1]
 		}
 
-		a.Users = append(a.Users, User{Account: email, Permissions: []string{role}})
+		a.Users = append(a.Users, User{Account: email, Role: role})
 	})
 
 	return a, nil

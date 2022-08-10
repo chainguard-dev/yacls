@@ -47,14 +47,12 @@ func SlackMembers(path string) (*Artifact, error) {
 		u := User{
 			Account: r.Email,
 			Name:    strings.TrimSpace(r.FullName),
+			Role:    r.Status,
 		}
 
 		if r.Status == "Bot" {
 			a.Bots = append(a.Bots, u)
 			continue
-		}
-		if r.Status != "Member" {
-			u.Permissions = []string{r.Status}
 		}
 		a.Users = append(a.Users, u)
 	}

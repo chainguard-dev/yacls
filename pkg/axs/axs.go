@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+	"sort"
+	"strings"
 	"time"
 )
 
@@ -11,15 +13,17 @@ var SourceDateFormat = "2006-01-02"
 
 type Artifact struct {
 	Metadata     *Source
-	ByPermission map[string][]string `yaml:",omitempty"`
 	Users        []User
-	Bots         []User `yaml:",omitempty"`
+	Bots         []User              `yaml:",omitempty"`
+	ByRole       map[string][]string `yaml:"by-role,omitempty"`
+	ByPermission map[string][]string `yaml:",omitempty"`
 }
 
 type User struct {
 	Account     string
 	Name        string   `yaml:",omitempty"`
 	Permissions []string `yaml:",omitempty"`
+	Role        string   `yaml:",omitempty"`
 	Status      string   `yaml:",omitempty"`
 }
 
@@ -34,6 +38,7 @@ type Source struct {
 	content []byte
 }
 
+// NewSource begins processing a source file, returning a source struct.
 func NewSource(path string) (*Source, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -65,4 +70,42 @@ func NewSource(path string) (*Source, error) {
 		SourceDate:  date.Format(SourceDateFormat),
 		content:     content,
 	}, nil
+}
+
+// FinalizeArtifact does some final manipulation on an artifact for consistency.
+func FinalizeArtifact(a *Artifact) {
+	// Make the output more deterministic
+	sort.Slice(a.Users, func(i, j int) bool {
+		return a.Users[i].Account < a.Users[j].Account
+	})
+	sort.Slice(a.Bots, func(i, j int) bool {
+		return a.Bots[i].Account < a.Bots[j].Account
+	})
+
+	roleMap := map[string][]string{}
+	for i, u := range a.Users {
+		if u.Role == "" {
+			continue
+		}
+		a.Users[i].Role = strings.ToLower(u.Role)
+		k := a.Users[i].Role
+		if roleMap[k] == nil {
+			roleMap[k] = []string{}
+		}
+		roleMap[k] = append(roleMap[k], u.Account)
+	}
+
+	for i, u := range a.Bots {
+		if u.Role == "" {
+			continue
+		}
+		a.Bots[i].Role = strings.ToLower(u.Role)
+		k := a.Bots[i].Role
+		if roleMap[k] == nil {
+			roleMap[k] = []string{}
+		}
+		roleMap[k] = append(roleMap[k], u.Account)
+	}
+
+	a.ByRole = roleMap
 }

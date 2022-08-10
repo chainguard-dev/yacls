@@ -58,7 +58,7 @@ func GoogleWorkspaceAudit(path string) (*Artifact, error) {
 		}
 
 		if r.AdminStatus != "None" {
-			u.Permissions = []string{r.AdminStatus}
+			u.Role = r.AdminStatus
 		}
 
 		if r.Status != "Active" {

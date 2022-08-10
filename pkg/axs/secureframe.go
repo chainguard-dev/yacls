@@ -43,8 +43,8 @@ func SecureframePersonnel(path string) (*Artifact, error) {
 
 		id, _, _ := strings.Cut(r.Email, "@")
 		u := User{
-			Account:     id,
-			Permissions: []string{r.Role},
+			Account: id,
+			Role:    r.Role,
 		}
 
 		a.Users = append(a.Users, u)
