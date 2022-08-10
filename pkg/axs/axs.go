@@ -14,16 +14,23 @@ var SourceDateFormat = "2006-01-02"
 type Artifact struct {
 	Metadata *Source
 	Users    []User
-	Bots     []User              `yaml:",omitempty"`
-	ByRole   map[string][]string `yaml:"by-role,omitempty"`
+	Bots     []User                  `yaml:",omitempty"`
+	ByRole   map[string][]string     `yaml:"by-role,omitempty"`
+	ByGroup  map[string][]Membership `yaml:"by-group,omitempty"`
 }
 
 type User struct {
 	Account string
-	Name    string   `yaml:",omitempty"`
-	Role    string   `yaml:",omitempty"`
-	Roles   []string `yaml:",omitempty"` // for systems that support multiple roles, like GCP
-	Status  string   `yaml:",omitempty"`
+	Name    string       `yaml:",omitempty"`
+	Role    string       `yaml:",omitempty"`
+	Roles   []string     `yaml:",omitempty"` // for systems that support multiple roles, like GCP
+	Status  string       `yaml:",omitempty"`
+	Groups  []Membership `yaml:",omitempty"`
+}
+
+type Membership struct {
+	Name  string   `yaml:",omitempty"`
+	Roles []string `yaml:",omitempty"`
 }
 
 type Source struct {

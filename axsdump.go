@@ -105,9 +105,10 @@ func main() {
 	}
 
 	if *gcpIAMProjectsFlag != "" {
+		cache := axs.NewGCPMemberCache()
 		projects := strings.Split(*gcpIAMProjectsFlag, ",")
 		for _, p := range projects {
-			a, err := axs.GoogleCloudIAMPolicy(p, *gcpIdentityProject)
+			a, err := axs.GoogleCloudIAMPolicy(p, *gcpIdentityProject, cache)
 			if err != nil {
 				klog.Exitf("gcp iam: %v", err)
 			}

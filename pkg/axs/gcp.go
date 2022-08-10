@@ -33,8 +33,67 @@ type binding struct {
 	Role    string   `yaml:"role"`
 }
 
+type gcpGroupMembership struct {
+	Expanded bool
+	Member   gcpMember `yaml:"preferredMemberKey"`
+	Roles    []gcpRole `yaml:"roles"`
+}
+
+type gcpMember struct {
+	ID string `yaml:"id"`
+}
+
+type gcpRole struct {
+	Name string `yaml:"name"`
+}
+
+type gcpMemberCache = map[string][]gcpGroupMembership
+
+// NewGCPMemberCache returns a populated structure to be used for caching membership lookups.
+func NewGCPMemberCache() gcpMemberCache {
+	return map[string][]gcpGroupMembership{}
+}
+
+// expandGCPMembers expands groups into lists of users.
+func expandGCPMembers(identity string, project string, cache gcpMemberCache) ([]gcpGroupMembership, error) {
+	if cache[identity] != nil {
+		klog.Infof("returning cache for %s: %+v", identity, cache[identity])
+		return cache[identity], nil
+	}
+
+	_, id, _ := strings.Cut(identity, ":")
+	if !strings.HasPrefix(identity, "group:") {
+		member := gcpGroupMembership{Member: gcpMember{ID: id}}
+		return []gcpGroupMembership{member}, nil
+	}
+
+	cmd := exec.Command("gcloud", "identity", "groups", "memberships", "list", fmt.Sprintf("--group-email=%s", id), fmt.Sprintf("--project=%s", project))
+	klog.Infof("executing %s", cmd)
+	stdout, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", cmd, err)
+	}
+
+	memberships := []gcpGroupMembership{}
+	dec := yaml.NewDecoder(bytes.NewReader(stdout))
+	for {
+		var doc gcpGroupMembership
+		if err := dec.Decode(&doc); err != nil {
+			if !errors.Is(err, io.EOF) {
+				return nil, fmt.Errorf("decode: %v", err)
+			}
+			break
+		}
+		doc.Expanded = true
+		memberships = append(memberships, doc)
+	}
+
+	cache[identity] = memberships
+	return memberships, nil
+}
+
 // GoogleCloudIAMPolicy uses gcloud to generate a list of GCP members.
-func GoogleCloudIAMPolicy(project string, identityProject string) (*Artifact, error) {
+func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMemberCache) (*Artifact, error) {
 	cmd := exec.Command("gcloud", "projects", "get-ancestors-iam-policy", project)
 	stdout, err := cmd.Output()
 	if err != nil {
@@ -72,6 +131,11 @@ func GoogleCloudIAMPolicy(project string, identityProject string) (*Artifact, er
 	}
 
 	users := map[string]*User{}
+	if identityProject == "" {
+		identityProject = project
+	}
+
+	seen := map[string]map[string]bool{}
 
 	// YAML is parsed, lets figure out the users & roles
 	for _, d := range docs {
@@ -81,15 +145,40 @@ func GoogleCloudIAMPolicy(project string, identityProject string) (*Artifact, er
 		}
 		for _, b := range d.Policy.Bindings {
 			for _, m := range b.Members {
-				if users[m] == nil {
-					users[m] = &User{Account: m}
+				expanded, err := expandGCPMembers(m, identityProject, cache)
+				if err != nil {
+					return nil, fmt.Errorf("expand members %s: %w", m, err)
 				}
-				users[m].Roles = append(users[m].Roles, b.Role)
+
+				for _, e := range expanded {
+					entity := e.Member.ID
+					if users[entity] == nil {
+						users[entity] = &User{Account: entity}
+						seen[entity] = map[string]bool{}
+					}
+					if !seen[entity][b.Role] {
+						users[entity].Roles = append(users[entity].Roles, b.Role)
+						seen[entity][b.Role] = true
+					}
+
+					if e.Expanded && !seen[entity][m] {
+						em := Membership{
+							Name: m,
+						}
+						for _, r := range e.Roles {
+							em.Roles = append(em.Roles, r.Name)
+						}
+
+						users[entity].Groups = append(users[entity].Groups, em)
+						seen[entity][m] = true
+					}
+				}
 			}
 		}
 	}
 
 	for _, u := range users {
+
 		if strings.HasPrefix(u.Account, "domain:") {
 			continue
 		}
