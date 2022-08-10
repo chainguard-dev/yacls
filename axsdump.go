@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"chainguard.dev/axsdump/pkg/axs"
 
@@ -21,8 +22,9 @@ var (
 	vercelMembersHTMLFlag       = flag.String("vercel-members-html", "", "Path to Vercel Members HTML")
 	ghostStaffHTMLFlag          = flag.String("ghost-staff-html", "", "Path to Ghost Staff HTML")
 	secureframePersonnelCSVFlag = flag.String("secureframe-personnel-csv", "", "Path to Secureframe Personnel CSV")
-
-	outDirFlag = flag.String("out-dir", "", "output YAML files to this directory")
+	gcpIAMProjectsFlag          = flag.String("gcp-iam-projects", "", "Comma-separated list of GCP projects to fetch IAM policies for")
+	gcpIdentityProject          = flag.String("gcp-identity-project", "", "Optional GCP project for group resolution (requires cloudidentity API)")
+	outDirFlag                  = flag.String("out-dir", "", "output YAML files to this directory")
 )
 
 func main() {
@@ -100,6 +102,18 @@ func main() {
 		}
 
 		artifacts = append(artifacts, a)
+	}
+
+	if *gcpIAMProjectsFlag != "" {
+		projects := strings.Split(*gcpIAMProjectsFlag, ",")
+		for _, p := range projects {
+			a, err := axs.GoogleCloudIAMPolicy(p, *gcpIdentityProject)
+			if err != nil {
+				klog.Exitf("gcp iam: %v", err)
+			}
+
+			artifacts = append(artifacts, a)
+		}
 	}
 
 	for _, a := range artifacts {

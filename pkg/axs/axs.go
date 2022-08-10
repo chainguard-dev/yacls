@@ -12,24 +12,24 @@ import (
 var SourceDateFormat = "2006-01-02"
 
 type Artifact struct {
-	Metadata     *Source
-	Users        []User
-	Bots         []User              `yaml:",omitempty"`
-	ByRole       map[string][]string `yaml:"by-role,omitempty"`
-	ByPermission map[string][]string `yaml:",omitempty"`
+	Metadata *Source
+	Users    []User
+	Bots     []User              `yaml:",omitempty"`
+	ByRole   map[string][]string `yaml:"by-role,omitempty"`
 }
 
 type User struct {
-	Account     string
-	Name        string   `yaml:",omitempty"`
-	Permissions []string `yaml:",omitempty"`
-	Role        string   `yaml:",omitempty"`
-	Status      string   `yaml:",omitempty"`
+	Account string
+	Name    string   `yaml:",omitempty"`
+	Role    string   `yaml:",omitempty"`
+	Roles   []string `yaml:",omitempty"` // for systems that support multiple roles, like GCP
+	Status  string   `yaml:",omitempty"`
 }
 
 type Source struct {
 	Kind        string
 	Name        string
+	ID          string
 	SourceDate  string    `yaml:"source_date,omitempty"`
 	GeneratedAt time.Time `yaml:"generated_at"`
 	GeneratedBy string    `yaml:"generated_by"`

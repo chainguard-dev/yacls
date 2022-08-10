@@ -21,6 +21,7 @@ go run . \
 * Ghost Blog Staff (HTML)
 * Github Org Members (CSV)
 * Google Workspace (CSV)
+* Google Cloud Platform (gcloud)
 * Kolide (CSV)
 * Secureframe (CSV)
 * Slack (CSV)
@@ -28,4 +29,4 @@ go run . \
 
 ## Coming soon
 
-* GCP (gcloud)
+* Webflow
