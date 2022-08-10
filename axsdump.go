@@ -136,7 +136,12 @@ func main() {
 		}
 
 		if *outDirFlag != "" {
-			outPath := filepath.Join(*outDirFlag, a.Metadata.Kind+".yaml")
+			name := a.Metadata.Kind + ".yaml"
+			if a.Metadata.ID != "" {
+				name = a.Metadata.Kind + "-" + a.Metadata.ID + ".yaml"
+			}
+
+			outPath := filepath.Join(*outDirFlag, name)
 			err := os.WriteFile(outPath, bs, 0o600)
 			if err != nil {
 				klog.Exitf("writefile: %w", err)
