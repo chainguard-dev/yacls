@@ -35,15 +35,15 @@ type binding struct {
 
 type gcpGroupMembership struct {
 	Expanded bool
-	Member   gcpMember `yaml:"preferredMemberKey"`
-	Roles    []gcpRole `yaml:"roles"`
+	Member   gcpMember     `yaml:"preferredMemberKey"`
+	Roles    []gcpRoleType `yaml:"roles"`
 }
 
 type gcpMember struct {
 	ID string `yaml:"id"`
 }
 
-type gcpRole struct {
+type gcpRoleType struct {
 	Name string `yaml:"name"`
 }
 
@@ -90,6 +90,33 @@ func expandGCPMembers(identity string, project string, cache gcpMemberCache) ([]
 
 	cache[identity] = memberships
 	return memberships, nil
+}
+
+// GCP returns multiple roles for a group membership, but only the highest has any meaning
+func highestGCPRoleType(types []gcpRoleType) string {
+	highest := ""
+
+	// MEMBER -> ADMIN -> OWNER
+
+	for _, roleType := range types {
+		t := strings.ToUpper(roleType.Name)
+		if highest == "" {
+			highest = t
+		}
+		if highest == "MEMBER" {
+			highest = t
+		}
+
+		if t == "OWNER" {
+			highest = t
+		}
+
+		if t == "ADMIN" && highest == "MEMBER" {
+			highest = t
+		}
+	}
+
+	return highest
 }
 
 // GoogleCloudIAMPolicy uses gcloud to generate a list of GCP members.
@@ -165,10 +192,7 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 						em := Membership{
 							Name: m,
 						}
-						for _, r := range e.Roles {
-							em.Roles = append(em.Roles, r.Name)
-						}
-
+						em.Role = highestGCPRoleType(e.Roles)
 						users[entity].Groups = append(users[entity].Groups, em)
 						seen[entity][m] = true
 					}

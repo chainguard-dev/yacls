@@ -30,6 +30,7 @@ type User struct {
 
 type Membership struct {
 	Name  string   `yaml:",omitempty"`
+	Role  string   `yaml:",omitempty"`
 	Roles []string `yaml:",omitempty"`
 }
 
