@@ -18,6 +18,12 @@ var gcpOrgSteps = []string{
 	"Execute 'axsdump --gcloud-iam-projects=[project,...]'",
 }
 
+// hideRoles are roles which every org member has; this is hidden to remove output spam
+var hideRoles = map[string]bool{
+	"roles/billing.user":                 true,
+	"roles/resourcemanager.folderViewer": true,
+}
+
 type ancestorsIAMPolicyDoc struct {
 	ID     string `yaml:"id"`
 	Type   string `yaml:"type"`
@@ -183,8 +189,10 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 						seen[entity] = map[string]bool{}
 					}
 					if !seen[entity][b.Role] {
-						users[entity].Roles = append(users[entity].Roles, b.Role)
-						seen[entity][b.Role] = true
+						if !hideRoles[b.Role] {
+							users[entity].Roles = append(users[entity].Roles, b.Role)
+							seen[entity][b.Role] = true
+						}
 					}
 
 					if e.Expanded && !seen[entity][m] {
@@ -193,6 +201,11 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 							Name: id,
 						}
 						em.Role = highestGCPRoleType(e.Roles)
+
+						// Shorten output
+						if em.Role == "MEMBER" {
+							em.Role = ""
+						}
 						users[entity].Groups = append(users[entity].Groups, em)
 						seen[entity][m] = true
 					}
@@ -210,6 +223,12 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 			a.Bots = append(a.Bots, *u)
 			continue
 		}
+
+		if len(u.Roles) == 0 {
+			klog.Infof("skipping %s (no important roles)", u.Account)
+			continue
+		}
+
 		a.Users = append(a.Users, *u)
 	}
 
