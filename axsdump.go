@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"os"
@@ -134,6 +135,11 @@ func main() {
 		if err != nil {
 			klog.Exitf("encode: %v", err)
 		}
+
+		// Improve readability by adding a newline before each account
+		bs = bytes.ReplaceAll(bs, []byte("    - account"), []byte("\n    - account"))
+		// Remove the first double newline
+		bs = bytes.Replace(bs, []byte("\n\n"), []byte("\n"), 1)
 
 		if *outDirFlag != "" {
 			name := a.Metadata.Kind + ".yaml"
