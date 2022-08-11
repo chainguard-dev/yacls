@@ -150,7 +150,7 @@ func main() {
 			outPath := filepath.Join(*outDirFlag, name)
 			err := os.WriteFile(outPath, bs, 0o600)
 			if err != nil {
-				klog.Exitf("writefile: %w", err)
+				klog.Exitf("writefile: %s", err)
 			}
 			klog.Infof("wrote to %s (%d bytes)", outPath, len(bs))
 		} else {
