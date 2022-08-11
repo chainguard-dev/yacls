@@ -6,12 +6,14 @@ import (
 	"regexp"
 
 	"github.com/PuerkitoBio/goquery"
+	"k8s.io/klog/v2"
 )
 
 var ghostSteps = []string{
 	"Open the corporate Ghost blog",
 	"Click 'Settings'",
 	"Click 'Staff'",
+	"Zoom out so that all users are visible on one screen",
 	"Save this page (Complete)",
 	"Execute 'axsdump --ghost-staff-html=<path.html>'",
 }
@@ -40,6 +42,7 @@ func GhostStaff(path string) (*Artifact, error) {
 		if len(matches) < 2 {
 			return
 		}
+		klog.Infof("found matching link: %s", s.AttrOr("href", ""))
 
 		username := matches[1]
 		name := s.Find("h3").Text()
