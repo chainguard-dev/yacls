@@ -129,10 +129,19 @@ func FinalizeArtifact(a *Artifact) {
 	for _, g := range a.Groups {
 		for _, m := range g.Members {
 			for _, p := range g.Permissions {
+				if hasPermission[p] == nil {
+					hasPermission[p] = map[string]bool{}
+				}
+
 				if !hasPermission[p][m] {
 					a.Permissions[p] = append(a.Permissions[p], m)
+					hasPermission[p][m] = true
 				}
 			}
 		}
+	}
+
+	for i := range a.Permissions {
+		sort.Strings(a.Permissions[i])
 	}
 }

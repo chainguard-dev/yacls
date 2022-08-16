@@ -207,7 +207,12 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 					}
 
 					perm := binding.Role
-					if !hideRoles[perm] && !membership.Expanded && !seenWithPerm[id][perm] {
+					if hideRoles[perm] {
+						klog.Infof("%s: hiding built-in hidden role: %s", id, perm)
+						continue
+					}
+
+					if !membership.Expanded && !seenWithPerm[id][perm] {
 						users[id].Permissions = append(users[id].Permissions, perm)
 						seenWithPerm[id][perm] = true
 					}
@@ -252,6 +257,11 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 		for _, m := range g.Members {
 			klog.Infof("group %s - member %s", g.Name, m)
 			klog.Infof("member details: %+v", users[m])
+
+			sort.Slice(users[m].Groups, func(i, j int) bool {
+				return users[m].Groups[i].Name < users[m].Groups[j].Name
+			})
+
 			for i, ug := range users[m].Groups {
 				if ug.Name == g.Name {
 					users[m].Groups[i].Permissions = g.Permissions
@@ -282,7 +292,7 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 			showPerms := []string{}
 			for _, p := range g.Permissions {
 				if seenPerm[p] {
-					klog.Infof("dropping dupe permission %p in %s:%s", a)
+					klog.Infof("dropping dupe permission %s in %s:%s", p, u.Account, g.Name)
 					continue
 				}
 				showPerms = append(showPerms, p)
