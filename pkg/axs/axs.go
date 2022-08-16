@@ -11,28 +11,36 @@ import (
 var SourceDateFormat = "2006-01-02"
 
 type Artifact struct {
-	Metadata  *Source
-	UserCount int `yaml:"user_count"`
-	Users     []User
-	Bots      []User                  `yaml:",omitempty"`
-	ByRole    map[string][]string     `yaml:"by-role,omitempty"`
-	ByGroup   map[string][]Membership `yaml:"by-group,omitempty"`
+	Metadata    *Source
+	UserCount   int `yaml:"user_count"`
+	Users       []User
+	Bots        []User              `yaml:",omitempty"`
+	Groups      []Group             `yaml:"groups,omitempty"`
+	Roles       map[string][]string `yaml:"roles,omitempty"`
+	Permissions map[string][]string `yaml:"permissions,omitempty"`
 }
 
 type User struct {
-	Account string
-	Name    string       `yaml:",omitempty"`
-	Role    string       `yaml:",omitempty"`
-	Roles   []string     `yaml:",omitempty"` // for systems that support multiple roles, like GCP
-	Status  string       `yaml:",omitempty"`
-	Groups  []Membership `yaml:",omitempty"`
+	Account     string
+	Name        string       `yaml:",omitempty"`
+	Role        string       `yaml:",omitempty"`
+	Permissions []string     `yaml:",omitempty"`
+	Status      string       `yaml:",omitempty"`
+	Groups      []Membership `yaml:",omitempty"`
+}
+
+type Group struct {
+	Name        string   `yaml:",omitempty"`
+	Description string   `yaml:",omitempty"`
+	Permissions []string `yaml:"permissions,omitempty"`
+	Members     []string
 }
 
 type Membership struct {
 	Name        string   `yaml:",omitempty"`
 	Description string   `yaml:",omitempty"`
 	Role        string   `yaml:",omitempty"`
-	Roles       []string `yaml:",omitempty"`
+	Permissions []string `yaml:"permissions,omitempty"`
 }
 
 type Source struct {
@@ -92,31 +100,39 @@ func FinalizeArtifact(a *Artifact) {
 	})
 
 	a.UserCount = len(a.Users)
-	a.ByGroup = map[string][]Membership{}
-	a.ByRole = map[string][]string{}
+	//	a.ByGroup = map[string][]Membership{}
+	a.Roles = map[string][]string{}
+	a.Permissions = map[string][]string{}
 
 	allUsers := []User{}
 	allUsers = append(allUsers, a.Users...)
 	allUsers = append(allUsers, a.Bots...)
+	hasPermission := map[string]map[string]bool{}
 
 	for _, u := range allUsers {
-		for _, g := range u.Groups {
-			if a.ByGroup[g.Name] == nil {
-				a.ByGroup[g.Name] = []Membership{}
-			}
-			a.ByGroup[g.Name] = append(a.ByGroup[g.Name], Membership{Name: u.Account, Role: g.Role, Roles: g.Roles})
+		if u.Role != "" {
+			a.Roles[u.Role] = append(a.Roles[u.Role], u.Account)
 		}
 
-		roles := u.Roles
-		if len(roles) == 0 && u.Role != "" {
-			roles = []string{u.Role}
-		}
-
-		for _, r := range roles {
-			if a.ByRole[r] == nil {
-				a.ByRole[r] = []string{}
+		perms := u.Permissions
+		for _, p := range perms {
+			if a.Permissions[p] == nil {
+				a.Permissions[p] = []string{}
+				hasPermission[p] = map[string]bool{}
 			}
-			a.ByRole[r] = append(a.ByRole[r], u.Account)
+			a.Permissions[p] = append(a.Permissions[p], u.Account)
+			hasPermission[p][u.Account] = true
+		}
+	}
+
+	// Deal with inherited permissions
+	for _, g := range a.Groups {
+		for _, m := range g.Members {
+			for _, p := range g.Permissions {
+				if !hasPermission[p][m] {
+					a.Permissions[p] = append(a.Permissions[p], m)
+				}
+			}
 		}
 	}
 }

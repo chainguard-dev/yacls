@@ -7,6 +7,7 @@ import (
 	"io"
 	"os/exec"
 	"os/user"
+	"sort"
 	"strings"
 	"time"
 
@@ -18,7 +19,7 @@ var gcpOrgSteps = []string{
 	"Execute 'axsdump --gcloud-iam-projects=[project,...]'",
 }
 
-// hideRoles are roles which every org member has; this is hidden to remove output spam
+// hideRoles are roles which every org member has; this is hidden to remove output spam.
 var hideRoles = map[string]bool{
 	"roles/billing.user":                 true,
 	"roles/resourcemanager.folderViewer": true,
@@ -78,6 +79,7 @@ func expandGCPMembers(identity string, project string, cache gcpMemberCache) ([]
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", cmd, err)
 	}
+	klog.Infof("output: %s", stdout)
 
 	memberships := []gcpGroupMembership{}
 	dec := yaml.NewDecoder(bytes.NewReader(stdout))
@@ -167,7 +169,14 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 		identityProject = project
 	}
 
-	seen := map[string]map[string]bool{}
+	// CONFUSION ALERT!@$!@$!@
+	// Google Groups have a single role (owner, member, admin) - we refer to those as "role"
+	// GCP has multiple roles (role/viewer, etc) - we refer to those as "permissions" to avoid confusion
+
+	seenInGrp := map[string]map[string]bool{}
+	seenWithPerm := map[string]map[string]bool{}
+
+	groups := map[string]*Group{}
 
 	// YAML is parsed, lets figure out the users & roles
 	for _, d := range docs {
@@ -175,43 +184,82 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 			a.Metadata.ID = d.ID
 			a.Metadata.Name = fmt.Sprintf("Google Cloud IAM Policy for %s", d.ID)
 		}
-		for _, b := range d.Policy.Bindings {
-			for _, m := range b.Members {
-				expanded, err := expandGCPMembers(m, identityProject, cache)
+
+		// Bindings are a relationship of roles to members
+		for _, binding := range d.Policy.Bindings {
+			// bindMembers may be individuals or groups
+			for _, bindMember := range binding.Members {
+				// Expand all groups into individuals
+				expanded, err := expandGCPMembers(bindMember, identityProject, cache)
 				if err != nil {
-					return nil, fmt.Errorf("expand members %s: %w", m, err)
+					return nil, fmt.Errorf("expand members %s: %w", bindMember, err)
 				}
+				klog.Infof("m: %s -- role %s / members %s / expanded: %s", bindMember, binding.Role, binding.Members, expanded)
 
-				for _, e := range expanded {
-					entity := e.Member.ID
-					if users[entity] == nil {
-						users[entity] = &User{Account: entity}
-						seen[entity] = map[string]bool{}
-					}
-					if !seen[entity][b.Role] {
-						if !hideRoles[b.Role] {
-							users[entity].Roles = append(users[entity].Roles, b.Role)
-							seen[entity][b.Role] = true
-						}
+				for _, membership := range expanded {
+					// id is the individuals login
+					id := membership.Member.ID
+					if users[id] == nil {
+						klog.Infof("new user: %s", id)
+						users[id] = &User{Account: id}
+						seenWithPerm[id] = map[string]bool{}
+						seenInGrp[id] = map[string]bool{}
 					}
 
-					if e.Expanded && !seen[entity][m] {
-						_, id, _ := strings.Cut(m, ":")
-						em := Membership{
-							Name: id,
-						}
-						em.Role = highestGCPRoleType(e.Roles)
+					perm := binding.Role
+					if !hideRoles[perm] && !membership.Expanded && !seenWithPerm[id][perm] {
+						users[id].Permissions = append(users[id].Permissions, perm)
+						seenWithPerm[id][perm] = true
+					}
 
-						// Shorten output
-						if em.Role == "MEMBER" {
-							em.Role = ""
-						}
-						users[entity].Groups = append(users[entity].Groups, em)
-						seen[entity][m] = true
+					// Everything after this deals with expanded groups
+					if !membership.Expanded {
+						continue
+					}
+
+					_, grp, _ := strings.Cut(bindMember, ":")
+
+					if groups[grp] == nil {
+						klog.Infof("new group: %s with members: %s - permission: %s", grp, expanded, perm)
+						groups[grp] = &Group{Name: grp}
+						seenWithPerm[grp] = map[string]bool{}
+					}
+
+					if !seenWithPerm[grp][perm] {
+						groups[grp].Permissions = append(groups[grp].Permissions, perm)
+						seenWithPerm[grp][perm] = true
+					}
+
+					highestRole := highestGCPRoleType(membership.Roles)
+					if highestRole == "MEMBER" {
+						highestRole = ""
+					}
+
+					if !seenInGrp[id][grp] {
+						groups[grp].Members = append(groups[grp].Members, id)
+						users[id].Groups = append(users[id].Groups, Membership{Name: grp, Role: highestRole})
+						seenInGrp[id][grp] = true
 					}
 				}
 			}
 		}
+	}
+
+	for _, g := range groups {
+		sort.Strings(g.Members)
+		sort.Strings(g.Permissions)
+
+		for _, m := range g.Members {
+			klog.Infof("group %s - member %s", g.Name, m)
+			klog.Infof("member details: %+v", users[m])
+			for i, ug := range users[m].Groups {
+				if ug.Name == g.Name {
+					users[m].Groups[i].Permissions = g.Permissions
+					users[m].Groups[i].Description = g.Description
+				}
+			}
+		}
+		a.Groups = append(a.Groups, *g)
 	}
 
 	for _, u := range users {
@@ -224,7 +272,32 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 			continue
 		}
 
-		if len(u.Roles) == 0 {
+		sort.Slice(a.Groups, func(i, j int) bool {
+			return a.Groups[i].Name < a.Groups[j].Name
+		})
+
+		// Hide redundant permissions from the user view
+		seenPerm := map[string]bool{}
+		for i, g := range u.Groups {
+			showPerms := []string{}
+			for _, p := range g.Permissions {
+				if seenPerm[p] {
+					klog.Infof("dropping dupe permission %p in %s:%s", a)
+					continue
+				}
+				showPerms = append(showPerms, p)
+				seenPerm[p] = true
+			}
+			u.Groups[i].Permissions = showPerms
+		}
+
+		effectivePerms := []string{}
+		effectivePerms = append(effectivePerms, u.Permissions...)
+		for _, g := range u.Groups {
+			effectivePerms = append(effectivePerms, g.Permissions...)
+		}
+
+		if len(effectivePerms) == 0 {
 			klog.Infof("skipping %s (no important roles)", u.Account)
 			continue
 		}
