@@ -277,7 +277,7 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 			continue
 		}
 
-		if strings.HasPrefix(u.Account, "serviceAccount:") {
+		if strings.HasSuffix(u.Account, "gserviceaccount.com") {
 			a.Bots = append(a.Bots, *u)
 			continue
 		}

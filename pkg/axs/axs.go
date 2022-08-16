@@ -11,13 +11,17 @@ import (
 var SourceDateFormat = "2006-01-02"
 
 type Artifact struct {
-	Metadata    *Source
-	UserCount   int `yaml:"user_count"`
-	Users       []User
-	Bots        []User              `yaml:",omitempty"`
-	Groups      []Group             `yaml:"groups,omitempty"`
-	Roles       map[string][]string `yaml:"roles,omitempty"`
-	Permissions map[string][]string `yaml:"permissions,omitempty"`
+	Metadata        *Source
+	UserCount       int `yaml:"user_count"`
+	Users           []User
+	BotCount        int                 `yaml:"bot_count,omitempty"`
+	Bots            []User              `yaml:",omitempty"`
+	GroupCount      int                 `yaml:"group_count,omitempty"`
+	Groups          []Group             `yaml:"groups,omitempty"`
+	RoleCount       int                 `yaml:"role_count,omitempty"`
+	Roles           map[string][]string `yaml:"roles,omitempty"`
+	PermissionCount int                 `yaml:"permission_count,omitempty"`
+	Permissions     map[string][]string `yaml:"permissions,omitempty"`
 }
 
 type User struct {
@@ -99,7 +103,6 @@ func FinalizeArtifact(a *Artifact) {
 		return a.Bots[i].Account < a.Bots[j].Account
 	})
 
-	a.UserCount = len(a.Users)
 	//	a.ByGroup = map[string][]Membership{}
 	a.Roles = map[string][]string{}
 	a.Permissions = map[string][]string{}
@@ -144,4 +147,10 @@ func FinalizeArtifact(a *Artifact) {
 	for i := range a.Permissions {
 		sort.Strings(a.Permissions[i])
 	}
+
+	a.UserCount = len(a.Users)
+	a.BotCount = len(a.Bots)
+	a.PermissionCount = len(a.Permissions)
+	a.RoleCount = len(a.Roles)
+	a.GroupCount = len(a.Groups)
 }
