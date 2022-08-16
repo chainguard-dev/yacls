@@ -207,13 +207,11 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 					}
 
 					perm := binding.Role
-					if hideRoles[perm] {
-						klog.Infof("%s: hiding built-in hidden role: %s", id, perm)
-						continue
-					}
 
 					if !membership.Expanded && !seenWithPerm[id][perm] {
-						users[id].Permissions = append(users[id].Permissions, perm)
+						if !hideRoles[perm] {
+							users[id].Permissions = append(users[id].Permissions, perm)
+						}
 						seenWithPerm[id][perm] = true
 					}
 
@@ -231,7 +229,9 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 					}
 
 					if !seenWithPerm[grp][perm] {
-						groups[grp].Permissions = append(groups[grp].Permissions, perm)
+						if !hideRoles[perm] {
+							groups[grp].Permissions = append(groups[grp].Permissions, perm)
+						}
 						seenWithPerm[grp][perm] = true
 					}
 
