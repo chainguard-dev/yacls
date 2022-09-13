@@ -7,7 +7,7 @@ import (
 	"github.com/gocarina/gocsv"
 )
 
-var googleWorkspaceUsersSteps = []string{
+var GoogleWorkspaceUsersSteps = []string{
 	"Open https://admin.google.com/ac/users",
 	"Click Download users",
 	"Select 'All user info Columns'",
@@ -32,7 +32,7 @@ func GoogleWorkspaceUsers(path string) (*Artifact, error) {
 	}
 	src.Kind = "google_workspace_users"
 	src.Name = "Google Workspace User List"
-	src.Process = googleWorkspaceUsersSteps
+	src.Process = renderSteps(GoogleWorkspaceUsersSteps, path)
 	a := &Artifact{Metadata: src}
 
 	records := []googleWorkspaceUserRecord{}

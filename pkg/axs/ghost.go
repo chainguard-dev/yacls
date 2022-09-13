@@ -9,13 +9,13 @@ import (
 	"k8s.io/klog/v2"
 )
 
-var ghostSteps = []string{
+var GhostSteps = []string{
 	"Open the corporate Ghost blog",
 	"Click 'Settings'",
 	"Click 'Staff'",
 	"Zoom out so that all users are visible on one screen",
 	"Save this page (Complete)",
-	"Execute 'axsdump --ghost-staff-html=<path.html>'",
+	"Execute 'axsdump --ghost-staff-html=<path>'",
 }
 
 var ghostUserRe = regexp.MustCompile(`/staff/([\w-]+)`)
@@ -28,7 +28,7 @@ func GhostStaff(path string) (*Artifact, error) {
 	}
 	src.Kind = "ghost_staff"
 	src.Name = "Ghost Blog Permissions"
-	src.Process = ghostSteps
+	src.Process = renderSteps(GhostSteps, path)
 	a := &Artifact{Metadata: src}
 
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(src.content))

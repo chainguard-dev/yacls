@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	googleWorkspaceAuditSteps = []string{
+	GoogleWorkspaceAuditSteps = []string{
 		"Open https://admin.google.com/ac/reporting/report/user/accounts",
 		"Click Download icon",
 		"Select All Columns",
@@ -38,7 +38,7 @@ func GoogleWorkspaceAudit(path string) (*Artifact, error) {
 	}
 	src.Kind = "google_workspace_audit"
 	src.Name = "Google Workspace User Audit"
-	src.Process = googleWorkspaceAuditSteps
+	src.Process = renderSteps(GoogleWorkspaceAuditSteps, path)
 	a := &Artifact{Metadata: src}
 
 	neutered, date := extractDateFromHeaders(src.content)

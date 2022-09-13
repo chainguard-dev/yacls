@@ -7,7 +7,7 @@ import (
 	"github.com/gocarina/gocsv"
 )
 
-var slackSteps = []string{
+var SlackSteps = []string{
 	"Open Slack",
 	"Click <org name>▼",
 	"Select 'Settings & Administration'",
@@ -31,7 +31,7 @@ func SlackMembers(path string) (*Artifact, error) {
 	}
 	src.Kind = "slack_org_members"
 	src.Name = "Slack Members"
-	src.Process = slackSteps
+	src.Process = renderSteps(SlackSteps, path)
 	a := &Artifact{Metadata: src}
 
 	records := []slackMemberRecord{}

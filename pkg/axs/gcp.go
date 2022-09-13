@@ -16,7 +16,7 @@ import (
 )
 
 var gcpOrgSteps = []string{
-	"Execute 'axsdump --gcloud-iam-projects=[project,...]'",
+	"Execute 'axsdump --gcloud-iam-projects=<project>'",
 }
 
 // hideRoles are roles which every org member has; this is hidden to remove output spam.
@@ -77,6 +77,9 @@ func expandGCPMembers(identity string, project string, cache gcpMemberCache) ([]
 	klog.Infof("executing %s", cmd)
 	stdout, err := cmd.Output()
 	if err != nil {
+		if ee, ok := err.(*exec.ExitError); ok {
+			return nil, fmt.Errorf("%s: %w\nstderr: %s", cmd, err, ee.Stderr)
+		}
 		return nil, fmt.Errorf("%s: %w", cmd, err)
 	}
 	klog.Infof("output: %s", stdout)
@@ -131,6 +134,9 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 	cmd := exec.Command("gcloud", "projects", "get-ancestors-iam-policy", project)
 	stdout, err := cmd.Output()
 	if err != nil {
+		if ee, ok := err.(*exec.ExitError); ok {
+			return nil, fmt.Errorf("%s: %w\nstderr: %s", cmd, err, ee.Stderr)
+		}
 		return nil, fmt.Errorf("%s: %w", cmd, err)
 	}
 
@@ -160,7 +166,7 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 			GeneratedAt: time.Now(),
 			GeneratedBy: cu.Username,
 			SourceDate:  time.Now().Format(SourceDateFormat),
-			Process:     gcpOrgSteps,
+			Process:     renderSteps(gcpOrgSteps, project),
 		},
 	}
 

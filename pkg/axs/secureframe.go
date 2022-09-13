@@ -7,7 +7,7 @@ import (
 	"github.com/gocarina/gocsv"
 )
 
-var secureframeSteps = []string{
+var SecureframeSteps = []string{
 	"Open https://app.secureframe.com/personnel",
 	"Deselect any active filters",
 	"Click Export...",
@@ -28,7 +28,7 @@ func SecureframePersonnel(path string) (*Artifact, error) {
 	}
 	src.Kind = "secureframe_personnel"
 	src.Name = "Secureframe Personnel"
-	src.Process = secureframeSteps
+	src.Process = renderSteps(SecureframeSteps, path)
 	a := &Artifact{Metadata: src}
 
 	records := []secureframePersonnelRecord{}

@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -153,4 +155,22 @@ func FinalizeArtifact(a *Artifact) {
 	a.PermissionCount = len(a.Permissions)
 	a.RoleCount = len(a.Roles)
 	a.GroupCount = len(a.Groups)
+}
+
+// updates <path> or <project> in a list of steps.
+func renderSteps(steps []string, id string) []string {
+	out := []string{}
+	for _, r := range steps {
+		rendered := r
+		if strings.Contains(rendered, "<path>") {
+			rendered = strings.Replace(r, "<path>", filepath.Base(id), 1)
+		}
+
+		if strings.Contains(rendered, "<project>") {
+			rendered = strings.Replace(r, "<project>", id, 1)
+		}
+
+		out = append(out, rendered)
+	}
+	return out
 }

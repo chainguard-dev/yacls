@@ -10,13 +10,13 @@ import (
 	"golang.org/x/text/language"
 )
 
-var vercelSteps = []string{
+var VercelSteps = []string{
 	"Open https://vercel.com/",
 	"Select your company/team",
 	"Click 'Settings'",
 	"Click 'Members'",
 	"Save this page (Complete)",
-	"Execute 'axsdump --vercel-members-html=<path.html>'",
+	"Execute 'axsdump --vercel-members-html=<path>'",
 }
 
 // VercelMembers parses the HTML output of the Vercel Members page.
@@ -27,7 +27,7 @@ func VercelMembers(path string) (*Artifact, error) {
 	}
 	src.Kind = "vercel_members"
 	src.Name = "Vercel Members"
-	src.Process = vercelSteps
+	src.Process = renderSteps(VercelSteps, path)
 	a := &Artifact{Metadata: src}
 
 	// Load the HTML document

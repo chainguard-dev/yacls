@@ -14,16 +14,20 @@ import (
 	"k8s.io/klog/v2"
 )
 
+func steps(s []string) string {
+	return fmt.Sprintf("Steps:\n  * %s", strings.Join(s, "\n  * "))
+}
+
 var (
-	googleWorkspaceAuditCSVFlag = flag.String("google-workspace-audit-csv", "", "Path to Google Workspace Audit CSV (delayed)")
-	googleWorkspaceUsersCSVFlag = flag.String("google-workspace-users-csv", "", "Path to Google Workspace Users CSV (live)")
-	githubOrgMembersCSVFlag     = flag.String("github-org-members-csv", "", "Path to Github Org Members CSV")
-	slackMembersCSVFlag         = flag.String("slack-members-csv", "", "Path to Slack Members CSV")
-	kolideUsersCSVFlag          = flag.String("kolide-users-csv", "", "Path to Kolide Users CSV")
-	vercelMembersHTMLFlag       = flag.String("vercel-members-html", "", "Path to Vercel Members HTML")
-	ghostStaffHTMLFlag          = flag.String("ghost-staff-html", "", "Path to Ghost Staff HTML")
-	webflowMembersHTMLFlag      = flag.String("webflow-members-html", "", "Path to Ghost Members HTML")
-	secureframePersonnelCSVFlag = flag.String("secureframe-personnel-csv", "", "Path to Secureframe Personnel CSV")
+	googleWorkspaceAuditCSVFlag = flag.String("google-workspace-audit-csv", "", fmt.Sprintf("Path to Google Workspace Audit CSV (delayed).\n%s", steps(axs.GoogleWorkspaceAuditSteps)))
+	googleWorkspaceUsersCSVFlag = flag.String("google-workspace-users-csv", "", fmt.Sprintf("Path to Google Workspace Users CSV (live)\n%s", steps(axs.GoogleWorkspaceUsersSteps)))
+	githubOrgMembersCSVFlag     = flag.String("github-org-members-csv", "", fmt.Sprintf("Path to Github Org Members CSV\n%s", steps(axs.GithubOrgSteps)))
+	slackMembersCSVFlag         = flag.String("slack-members-csv", "", fmt.Sprintf("Path to Slack Members CSV\n%s", steps(axs.SlackSteps)))
+	kolideUsersCSVFlag          = flag.String("kolide-users-csv", "", fmt.Sprintf("Path to Kolide Users CSV\n%s", steps(axs.KolideSteps)))
+	vercelMembersHTMLFlag       = flag.String("vercel-members-html", "", fmt.Sprintf("Path to Vercel Members HTML\n%s", steps(axs.VercelSteps)))
+	ghostStaffHTMLFlag          = flag.String("ghost-staff-html", "", fmt.Sprintf("Path to Ghost Staff HTML\n%s", steps(axs.GhostSteps)))
+	webflowMembersHTMLFlag      = flag.String("webflow-members-html", "", fmt.Sprintf("Path to Ghost Members HTML\n%s", steps(axs.WebflowSteps)))
+	secureframePersonnelCSVFlag = flag.String("secureframe-personnel-csv", "", fmt.Sprintf("Path to Secureframe Personnel CSV\n%s", steps(axs.SecureframeSteps)))
 	gcpIAMProjectsFlag          = flag.String("gcp-iam-projects", "", "Comma-separated list of GCP projects to fetch IAM policies for")
 	gcpIdentityProject          = flag.String("gcp-identity-project", "", "Optional GCP project for group resolution (requires cloudidentity API)")
 	outDirFlag                  = flag.String("out-dir", "", "output YAML files to this directory")

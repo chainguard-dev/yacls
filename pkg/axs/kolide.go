@@ -7,7 +7,7 @@ import (
 	"github.com/gocarina/gocsv"
 )
 
-var kolideSteps = []string{
+var KolideSteps = []string{
 	"Open https://k2.kolide.com/3361/settings/admin/users",
 	"Click CSV",
 	"Execute 'axsdump --kolide-users-csv=<path>'",
@@ -27,7 +27,7 @@ func KolideUsers(path string) (*Artifact, error) {
 	}
 	src.Kind = "kolide_users"
 	src.Name = "Kolide Users"
-	src.Process = kolideSteps
+	src.Process = renderSteps(KolideSteps, path)
 	a := &Artifact{Metadata: src}
 
 	records := []kolideMemberRecord{}

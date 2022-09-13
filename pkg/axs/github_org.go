@@ -7,7 +7,7 @@ import (
 	"github.com/gocarina/gocsv"
 )
 
-var githubOrgSteps = []string{
+var GithubOrgSteps = []string{
 	"Open https://github.com/orgs/<org>/people",
 	"Click Export",
 	"Select 'CSV'",
@@ -28,7 +28,7 @@ func GithubOrgMembers(path string) (*Artifact, error) {
 	}
 	src.Kind = "github_org_members"
 	src.Name = "Github Organization Members"
-	src.Process = githubOrgSteps
+	src.Process = renderSteps(GithubOrgSteps, path)
 	a := &Artifact{Metadata: src}
 
 	records := []githubMemberRecord{}
