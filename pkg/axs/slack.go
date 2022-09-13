@@ -13,6 +13,8 @@ var SlackSteps = []string{
 	"Select 'Settings & Administration'",
 	"Select 'Manage Members'",
 	"Select 'Export Member List'",
+	"Download resulting CSV file for analysis",
+
 	"Execute 'axsdump --slack-members-csv=<path>'",
 }
 

@@ -15,6 +15,11 @@ import (
 )
 
 func steps(s []string) string {
+	// omit the last step if it mentions axsdump
+	if strings.Contains(s[len(s)-1], "axsdump") {
+		s = s[0 : len(s)-1]
+	}
+
 	return fmt.Sprintf("Steps:\n  * %s", strings.Join(s, "\n  * "))
 }
 

@@ -16,6 +16,7 @@ var VercelSteps = []string{
 	"Click 'Settings'",
 	"Click 'Members'",
 	"Save this page (Complete)",
+	"Collect resulting .html file for analysis (the other files are not necessary)",
 	"Execute 'axsdump --vercel-members-html=<path>'",
 }
 

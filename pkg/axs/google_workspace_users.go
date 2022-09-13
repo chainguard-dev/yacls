@@ -12,6 +12,7 @@ var GoogleWorkspaceUsersSteps = []string{
 	"Click Download users",
 	"Select 'All user info Columns'",
 	"Select 'Comma-separated values (.csv)'",
+	"Download resulting CSV file for analysis",
 	"Execute 'axsdump --google-workspace-users-csv=<path>'",
 }
 

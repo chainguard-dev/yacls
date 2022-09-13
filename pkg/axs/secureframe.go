@@ -12,6 +12,7 @@ var SecureframeSteps = []string{
 	"Deselect any active filters",
 	"Click Export...",
 	"Select 'Direct Download'",
+	"Download resulting CSV file for analysis",
 	"Execute 'axsdump --secureframe-personnel-csv=<path>'",
 }
 

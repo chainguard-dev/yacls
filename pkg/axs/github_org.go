@@ -11,6 +11,7 @@ var GithubOrgSteps = []string{
 	"Open https://github.com/orgs/<org>/people",
 	"Click Export",
 	"Select 'CSV'",
+	"Download resulting CSV file for analysis",
 	"Execute 'axsdump --github-org-members-csv=<path>'",
 }
 

@@ -17,6 +17,7 @@ var (
 		"Click Download icon",
 		"Select All Columns",
 		"Click CSV",
+		"Download resulting CSV file for analysis",
 		"Execute 'axsdump --google-workspace-audit-csv=<path>'",
 	}
 

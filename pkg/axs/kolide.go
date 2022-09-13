@@ -10,6 +10,7 @@ import (
 var KolideSteps = []string{
 	"Open https://k2.kolide.com/3361/settings/admin/users",
 	"Click CSV",
+	"Download resulting CSV file for analysis",
 	"Execute 'axsdump --kolide-users-csv=<path>'",
 }
 
