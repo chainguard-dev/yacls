@@ -10,11 +10,11 @@ Turn a pile of CSV and HTML pages into a directory full of easily auditable YAML
 
 ```shell
 go run . \
-  --google-workspace-users-csv=$HOME/Downloads/User_Download.csv \
-  --google-workspace-audit-csv=$HOME/Downloads/users_logs.csv \
-  --github-org-members-csv=/home/t/Downloads/export.csv \
-  --slack-members-csv="$HOME/Downloads/slack-members.csv" \
-  --kolide-users-csv=$HOME/Downloads/kolide.csv \
+  --google-workspace-users-csv=User_Download.csv \
+  --google-workspace-audit-csv=users_logs.csv \
+  --github-org-members-csv=export.csv \
+  --slack-members-csv=slack-members.csv \
+  --kolide-users-csv=kolide.csv \
   --out-dir=/tmp
 ```
 
