@@ -7,8 +7,8 @@ Collect user ACLs from SaaS platforms and export them to YAML files.
 acls-in-yaml is designed to make regular access control audits easy by
 offering a familiar standardized format (YAML) for easy reviews and diffing.
 
-The output is optimized for being reviewed by humans within a Github PR periodically,
-and is carefully tuned to make policy drift over time easy to notice.
+The output is optimized for being reviewed by humans within a Github PR periodically
+and is carefully tuned to make policy drift easy to notice.
 
 ## Supported Data Sources
 
@@ -173,7 +173,7 @@ You can also pass in a single input file at a time.
 
 ### Why not use the APIs provided by each vendor?
 
-We'd like to add more direct API support (HELP WANRTED)!
-
 The current structure was put in place because of a separation of duties,
 where the person running this tool was not the one who had admin access to each SaaS platform.
+
+At the moment, the only fully automated audit is GCP, though we would like to add more direct API support. HELP WANTED!
