@@ -39,6 +39,7 @@ var (
 )
 
 func main() {
+	klog.InitFlags(nil)
 	flag.Parse()
 
 	artifacts := []*axs.Artifact{}
