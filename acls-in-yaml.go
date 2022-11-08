@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"chainguard.dev/axsdump/pkg/axs"
+	"github.com/chainguard-dev/acls-in-yaml/pkg/axs"
 
 	"gopkg.in/yaml.v3"
 	"k8s.io/klog/v2"
