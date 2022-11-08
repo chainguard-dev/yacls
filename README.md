@@ -90,7 +90,7 @@ You can also pass in a single input file at a time.
 
 `acls-in-yaml` takes many flags, though for most cases it is only necessary to pass one in at a time:
 
-```
+```yaml
  -gcp-iam-projects string
      Comma-separated list of GCP projects to fetch IAM policies for
   -gcp-identity-project string
@@ -173,7 +173,6 @@ You can also pass in a single input file at a time.
 
 ### Why not use the APIs provided by each vendor?
 
-The current structure was put in place because of a separation of duties,
-where the person running this tool was not the one who had admin access to each SaaS platform.
+The current structure was put in place because of a separation of duties, where the person running the tool was not the one who had admin access to each SaaS platform. It doesn't help that many SaaS platforms do not provide a documented API to retrieve user lists (Vercel, I'm looking at you!)
 
 At the moment, the only fully automated audit is GCP, though we would like to add more direct API support. HELP WANTED!
