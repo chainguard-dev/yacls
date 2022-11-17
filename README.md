@@ -1,6 +1,6 @@
 # acls-in-yaml
 
-Collect user ACLs from SaaS platforms and export them to YAML files.
+Collect user ACLs from SaaS platforms and export them to YAML files optimized for readability.
 
 ![acls-in-yaml](images/logo-small.png?raw=true "acls-in-yaml logo")
 
