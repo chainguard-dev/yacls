@@ -13,7 +13,7 @@ var WebflowSteps = []string{
 	"Open https://webflow.com/dashboard/sites/<site>/members",
 	"Save this page (Complete)",
 	"Collect resulting .html file for analysis (the other files are not necessary)",
-	"Execute 'axsdump --webflow-members-html=<path>'",
+	"Execute 'acls-in-yaml --webflow-members-html=<path>'",
 }
 
 var webflowUserRe = regexp.MustCompile(`(.*?) \((.*?@.*?)\)`)

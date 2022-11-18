@@ -16,7 +16,7 @@ import (
 )
 
 var gcpOrgSteps = []string{
-	"Execute 'axsdump --gcloud-iam-projects=<project>'",
+	"Execute 'acls-in-yaml --gcloud-iam-projects=<project>'",
 }
 
 // hideRoles are roles which every org member has; this is hidden to remove output spam.

@@ -15,7 +15,7 @@ var SlackSteps = []string{
 	"Select 'Export Member List'",
 	"Download resulting CSV file for analysis",
 
-	"Execute 'axsdump --slack-members-csv=<path>'",
+	"Execute 'acls-in-yaml --slack-members-csv=<path>'",
 }
 
 type slackMemberRecord struct {

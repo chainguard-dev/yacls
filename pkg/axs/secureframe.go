@@ -13,7 +13,7 @@ var SecureframeSteps = []string{
 	"Click Export...",
 	"Select 'Direct Download'",
 	"Download resulting CSV file for analysis",
-	"Execute 'axsdump --secureframe-personnel-csv=<path>'",
+	"Execute 'acls-in-yaml --secureframe-personnel-csv=<path>'",
 }
 
 type secureframePersonnelRecord struct {

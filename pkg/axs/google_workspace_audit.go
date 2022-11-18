@@ -18,7 +18,7 @@ var (
 		"Select All Columns",
 		"Click CSV",
 		"Download resulting CSV file for analysis",
-		"Execute 'axsdump --google-workspace-audit-csv=<path>'",
+		"Execute 'acls-in-yaml --google-workspace-audit-csv=<path>'",
 	}
 
 	googleAuditDateRegexp = regexp.MustCompile(` \[(\d{4}-\d{2}-\d{2}) GMT\]`)

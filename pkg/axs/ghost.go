@@ -16,7 +16,7 @@ var GhostSteps = []string{
 	"Zoom out so that all users are visible on one screen",
 	"Save this page (Complete)",
 	"Collect resulting .html file for analysis (the other files are not necessary)",
-	"Execute 'axsdump --ghost-staff-html=<path>'",
+	"Execute 'acls-in-yaml --ghost-staff-html=<path>'",
 }
 
 var ghostUserRe = regexp.MustCompile(`/staff/([\w-]+)`)

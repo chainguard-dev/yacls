@@ -17,7 +17,7 @@ var VercelSteps = []string{
 	"Click 'Members'",
 	"Save this page (Complete)",
 	"Collect resulting .html file for analysis (the other files are not necessary)",
-	"Execute 'axsdump --vercel-members-html=<path>'",
+	"Execute 'acls-in-yaml --vercel-members-html=<path>'",
 }
 
 // VercelMembers parses the HTML output of the Vercel Members page.

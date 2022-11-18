@@ -13,7 +13,7 @@ var GoogleWorkspaceUsersSteps = []string{
 	"Select 'All user info Columns'",
 	"Select 'Comma-separated values (.csv)'",
 	"Download resulting CSV file for analysis",
-	"Execute 'axsdump --google-workspace-users-csv=<path>'",
+	"Execute 'acls-in-yaml --google-workspace-users-csv=<path>'",
 }
 
 type googleWorkspaceUserRecord struct {

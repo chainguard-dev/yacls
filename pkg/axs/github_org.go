@@ -12,7 +12,7 @@ var GithubOrgSteps = []string{
 	"Click Export",
 	"Select 'CSV'",
 	"Download resulting CSV file for analysis",
-	"Execute 'axsdump --github-org-members-csv=<path>'",
+	"Execute 'acls-in-yaml --github-org-members-csv=<path>'",
 }
 
 type githubMemberRecord struct {

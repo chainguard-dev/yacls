@@ -50,7 +50,7 @@ metadata:
         - Click 'Members'
         - Save this page (Complete)
         - Collect resulting .html file for analysis (the other files are not necessary)
-        - Execute 'axsdump --vercel-members-html=Members - Team Settings – Dashboard – Vercel.html'
+        - Execute 'acls-in-yaml --vercel-members-html=Members - Team Settings – Dashboard – Vercel.html'
 user_count: 7
 users:
     - account: john@chainguard.dev
