@@ -12,6 +12,7 @@ and is carefully tuned to make policy drift easy to notice.
 
 ## Supported Data Sources
 
+* 1Password (CSV)
 * Ghost Blog Staff (HTML)
 * Github Org Members (CSV)
 * Google Cloud Platform (gcloud)
@@ -91,6 +92,11 @@ You can also pass in a single input file at a time.
 `acls-in-yaml` takes many flags, though for most cases it is only necessary to pass one in at a time:
 
 ```yaml
+  -1password-csv string
+     Path to 1Password Team CSV
+     Steps:
+       * To be documented
+       * Download resulting CSV file for analysis
   -gcp-identity-project string
      Optional GCP project for group resolution (requires cloudidentity API)
   -gcp-projects string

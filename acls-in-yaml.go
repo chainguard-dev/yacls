@@ -28,7 +28,7 @@ var (
 	googleWorkspaceUsersCSVFlag = flag.String("google-users-csv", "", fmt.Sprintf("Path to Google Workspace Users CSV (live)\n%s", steps(axs.GoogleWorkspaceUsersSteps)))
 	githubOrgMembersCSVFlag     = flag.String("github-org-csv", "", fmt.Sprintf("Path to Github Org Members CSV\n%s", steps(axs.GithubOrgSteps)))
 	slackMembersCSVFlag         = flag.String("slack-csv", "", fmt.Sprintf("Path to Slack Members CSV\n%s", steps(axs.SlackSteps)))
-	onePasswordFlag             = flag.String("1password-csv", "", fmt.Sprintf("Path to 1Password Team CSV\n", steps(axs.OnePasswordSteps)))
+	onePasswordFlag             = flag.String("1password-csv", "", fmt.Sprintf("Path to 1Password Team CSV\n%s", steps(axs.OnePasswordSteps)))
 	kolideUsersCSVFlag          = flag.String("kolide-csv", "", fmt.Sprintf("Path to Kolide Users CSV\n%s", steps(axs.KolideSteps)))
 	vercelMembersHTMLFlag       = flag.String("vercel-html", "", fmt.Sprintf("Path to Vercel Members HTML\n%s", steps(axs.VercelSteps)))
 	ghostStaffHTMLFlag          = flag.String("ghost-html", "", fmt.Sprintf("Path to Ghost Staff HTML\n%s", steps(axs.GhostSteps)))
