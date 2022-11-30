@@ -1,4 +1,4 @@
-package axs
+package platform
 
 import (
 	"fmt"
@@ -95,6 +95,45 @@ func NewSource(path string) (*Source, error) {
 	}, nil
 }
 
+// NewSourceFromConfig begins processing a source file, returning a source struct.
+func NewSourceFromConfig(c Config, p Processor) (*Source, error) {
+	path := c.Path
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("open: %w", err)
+	}
+
+	defer f.Close()
+
+	fi, err := os.Stat(path)
+	if err != nil {
+		return nil, fmt.Errorf("stat: %w", err)
+	}
+
+	date := fi.ModTime()
+
+	cu, err := user.Current()
+	if err != nil {
+		return nil, fmt.Errorf("user: %w", err)
+	}
+
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	desc := p.Description()
+	return &Source{
+		GeneratedAt: time.Now(),
+		GeneratedBy: cu.Username,
+		SourceDate:  date.Format(SourceDateFormat),
+		content:     content,
+		Kind:        desc.Kind,
+		Name:        desc.Name,
+		Process:     renderSteps(desc.Steps, path),
+	}, nil
+}
+
 // FinalizeArtifact does some final manipulation on an artifact for consistency.
 func FinalizeArtifact(a *Artifact) {
 	// Make the output more deterministic
@@ -173,4 +212,37 @@ func renderSteps(steps []string, id string) []string {
 		out = append(out, rendered)
 	}
 	return out
+}
+
+type ProcessorDescription struct {
+	Kind            string
+	Name            string
+	Steps           []string
+	SupportsProject bool
+}
+
+type Config struct {
+	Path    string
+	Project string
+	Kind    string
+}
+
+type Processor interface {
+	Description() ProcessorDescription
+	Process(c Config) (*Artifact, error)
+}
+
+func New(kind string) (Processor, error) {
+	switch kind {
+	case "1password-team":
+		return &OnePasswordTeam{}, nil
+	default:
+		return nil, fmt.Errorf("unknown kind: %q", kind)
+	}
+}
+
+func Available() []Processor {
+	return []Processor{
+		&OnePasswordTeam{},
+	}
 }

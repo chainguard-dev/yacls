@@ -1,4 +1,4 @@
-package axs
+package platform
 
 import (
 	"fmt"

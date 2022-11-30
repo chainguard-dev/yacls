@@ -1,0 +1,58 @@
+<html lang="en">
+<head>
+    <title>HOME</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f7f7fa;
+            padding: 1em;
+        }
+
+        h1 {
+            font-size: larger;
+            color: rgb(66,133,244);
+            margin-bottom: 0em;
+        }
+
+        ul {
+            padding: 0;
+            margin-bottom: 3em;
+            list-style-type: none;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #666;
+            font-size: small;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .board p {
+            font-size: small;
+            color: #999;
+            text-align: center;
+        }
+
+        h3 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>acls-in-yaml</h1>
+
+    <form method="POST" action="/submit">
+        <select>
+          {{ range $i, $kind := .Kinds }}<option>{{ .Title }}</option>{{ end }}
+        </select>
+
+        <input type="submit" value="Start">
+    </form>
+</body>
+</html>
