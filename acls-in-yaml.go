@@ -64,8 +64,15 @@ func main() {
 		klog.Fatalf("unable to create %q platform: %v", *kindFlag, err)
 	}
 
+	f, err := os.Open(*inputFlag)
+	if err != nil {
+		klog.Fatalf("unable to open: %v", err)
+	}
+	defer f.Close()
+
 	a, err := p.Process(platform.Config{
 		Path:    *inputFlag,
+		Reader:  f,
 		Project: *projectFlag,
 	})
 

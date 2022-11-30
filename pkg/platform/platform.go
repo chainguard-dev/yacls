@@ -2,6 +2,8 @@ package platform
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -97,40 +99,36 @@ func NewSource(path string) (*Source, error) {
 
 // NewSourceFromConfig begins processing a source file, returning a source struct.
 func NewSourceFromConfig(c Config, p Processor) (*Source, error) {
-	path := c.Path
-	f, err := os.Open(path)
+
+	content, err := ioutil.ReadAll(c.Reader)
 	if err != nil {
-		return nil, fmt.Errorf("open: %w", err)
+		return nil, fmt.Errorf("readall: %w", err)
 	}
 
-	defer f.Close()
+	var mtime time.Time
+	if c.Path != "" {
+		fi, err := os.Stat(c.Path)
+		if err != nil {
+			return nil, fmt.Errorf("stat: %w", err)
+		}
 
-	fi, err := os.Stat(path)
-	if err != nil {
-		return nil, fmt.Errorf("stat: %w", err)
+		mtime = fi.ModTime()
 	}
-
-	date := fi.ModTime()
 
 	cu, err := user.Current()
 	if err != nil {
 		return nil, fmt.Errorf("user: %w", err)
 	}
 
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
 	desc := p.Description()
 	return &Source{
 		GeneratedAt: time.Now(),
 		GeneratedBy: cu.Username,
-		SourceDate:  date.Format(SourceDateFormat),
+		SourceDate:  mtime.Format(SourceDateFormat),
 		content:     content,
 		Kind:        desc.Kind,
 		Name:        desc.Name,
-		Process:     renderSteps(desc.Steps, path),
+		Process:     renderSteps(desc.Steps, c.Path),
 	}, nil
 }
 
@@ -223,6 +221,7 @@ type ProcessorDescription struct {
 
 type Config struct {
 	Path    string
+	Reader  io.Reader
 	Project string
 	Kind    string
 }

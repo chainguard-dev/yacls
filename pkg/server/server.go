@@ -9,6 +9,7 @@ import (
 	"runtime"
 
 	"github.com/chainguard-dev/acls-in-yaml/pkg/platform"
+	"gopkg.in/yaml.v3"
 	"k8s.io/klog/v2"
 )
 
@@ -24,7 +25,6 @@ func New() *Server {
 
 func (s *Server) Serve() error {
 	http.HandleFunc("/", s.Root())
-	http.HandleFunc("/submit", s.Submit())
 	http.HandleFunc("/healthz", s.Healthz())
 
 	listenAddr := fmt.Sprintf(":%s", os.Getenv("PORT"))
@@ -37,7 +37,7 @@ func (s *Server) Serve() error {
 
 func (s *Server) error(w http.ResponseWriter, err error) {
 	msg := err.Error()
-	_, file, line, ok := runtime.Caller(0)
+	_, file, line, ok := runtime.Caller(1)
 	if ok {
 		msg = fmt.Sprintf("%s:%d: %v", file, line, err)
 	}
@@ -47,46 +47,73 @@ func (s *Server) error(w http.ResponseWriter, err error) {
 
 func (s *Server) Root() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		t, err := template.ParseFS(content, "home.tmpl")
+		if r.Method == "POST" {
+			if err := r.ParseMultipartForm(32 << 20); err != nil {
+				s.error(w, err)
+				return
+			}
+		}
 
+		t, err := template.ParseFS(content, "home.tmpl")
 		if err != nil {
 			s.error(w, err)
-		}
-
-		data := struct {
-			Available []platform.Processor
-		}{
-			Available: platform.Available(),
-		}
-
-		if err := t.Execute(w, data); err != nil {
-			s.error(w, err)
-		}
-	}
-}
-
-func (s *Server) Submit() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Call ParseForm() to parse the raw query and update r.PostForm and r.Form.
-		if err := r.ParseForm(); err != nil {
-			fmt.Fprintf(w, "ParseForm() err: %v", err)
 			return
 		}
 
-		kind := r.FormValue("kind")
-		t, err := template.ParseFS(content, "home.tmpl")
-		if err != nil {
-			s.error(w, err)
+		chosen := r.FormValue("kind")
+		isProcess := r.FormValue("process")
+		project := r.FormValue("project")
+
+		var proc platform.Processor
+		var desc platform.ProcessorDescription
+		klog.Infof("chosen: %s", chosen)
+		var output []byte
+
+		if chosen != "" {
+			proc, err = platform.New(chosen)
+			if err != nil {
+				s.error(w, err)
+				return
+			}
+			desc = proc.Description()
 		}
 
+		if isProcess != "" {
+			f, _, err := r.FormFile("file")
+			if err != nil {
+				s.error(w, err)
+				return
+			}
+
+			a, err := proc.Process(platform.Config{
+				Path:    "",
+				Reader:  f,
+				Project: project,
+			})
+
+			platform.FinalizeArtifact(a)
+			output, err = yaml.Marshal(a)
+			if err != nil {
+				s.error(w, err)
+			}
+		}
+
+		klog.Infof("desc:")
 		data := struct {
-			Kind string
+			Available []platform.Processor
+			Chosen    string
+			Desc      platform.ProcessorDescription
+			Output    []byte
 		}{
-			Kind: kind,
+			Available: platform.Available(),
+			Chosen:    chosen,
+			Desc:      desc,
+			Output:    output,
 		}
 
 		if err := t.Execute(w, data); err != nil {
 			s.error(w, err)
+			return
 		}
 	}
 }
