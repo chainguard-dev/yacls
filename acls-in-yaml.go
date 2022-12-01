@@ -26,29 +26,16 @@ func steps(s []string) string {
 }
 
 var (
-	/* googleWorkspaceAuditCSVFlag = flag.String("google-audit-csv", "", fmt.Sprintf("Path to Google Workspace Audit CSV (delayed).\n%s", steps(platform.GoogleWorkspaceAuditSteps)))
-	googleWorkspaceUsersCSVFlag = flag.String("google-users-csv", "", fmt.Sprintf("Path to Google Workspace Users CSV (live)\n%s", steps(platform.GoogleWorkspaceUsersSteps)))
-	githubOrgMembersCSVFlag     = flag.String("github-org-csv", "", fmt.Sprintf("Path to Github Org Members CSV\n%s", steps(platform.GithubOrgSteps)))
-	slackMembersCSVFlag         = flag.String("slack-csv", "", fmt.Sprintf("Path to Slack Members CSV\n%s", steps(platform.SlackSteps)))
-	onePasswordFlag             = flag.String("1password-csv", "", fmt.Sprintf("Path to 1Password Team CSV\n%s", steps(platform.OnePasswordTeam{}.Description().Steps)))
-	kolideUsersCSVFlag          = flag.String("kolide-csv", "", fmt.Sprintf("Path to Kolide Users CSV\n%s", steps(platform.KolideSteps)))
-	vercelMembersHTMLFlag       = flag.String("vercel-html", "", fmt.Sprintf("Path to Vercel Members HTML\n%s", steps(platform.VercelSteps)))
-	ghostStaffHTMLFlag          = flag.String("ghost-html", "", fmt.Sprintf("Path to Ghost Staff HTML\n%s", steps(platform.GhostSteps)))
-	webflowMembersHTMLFlag      = flag.String("webflow-html", "", fmt.Sprintf("Path to Ghost Members HTML\n%s", steps(platform.WebflowSteps)))
-	secureframePersonnelCSVFlag = flag.String("secureframe-csv", "", fmt.Sprintf("Path to Secureframe Personnel CSV\n%s", steps(platform.SecureframeSteps)))
-	gcpIAMProjectsFlag          = flag.String("gcp-projects", "", "Comma-separated list of GCP projects to fetch IAM policies for")
-	gcpIdentityProject          = flag.String("gcp-identity-project", "", "Optional GCP project for group resolution (requires cloudidentity API)")
-	*/
-
 	inputFlag   = flag.String("input", "", "path to input file")
-	projectFlag = flag.String("project", "", "path to input file")
-	kindFlag    = flag.String("kind", "", "kind of file to process")
+	projectFlag = flag.String("project", "", "specific project to process within the kind")
+	kindFlag    = flag.String("kind", "", fmt.Sprintf("kind of input to process. Valid values: \n  * %s", strings.Join(platform.AvailableKinds(), "\n  * ")))
 	serveFlag   = flag.Bool("serve", false, "Enable server mode (web UI)")
 	outDirFlag  = flag.String("out-dir", "", "output YAML files to this directory")
 )
 
 func main() {
-	klog.InitFlags(nil)
+	// Pollutes --help with flags no one will need
+	// klog.InitFlags(nil)
 	flag.Parse()
 
 	if *serveFlag {
@@ -70,11 +57,17 @@ func main() {
 	}
 	defer f.Close()
 
+	gcpMemberCache := platform.NewGCPMemberCache()
+
 	a, err := p.Process(platform.Config{
-		Path:    *inputFlag,
-		Reader:  f,
-		Project: *projectFlag,
+		Path:           *inputFlag,
+		Reader:         f,
+		Project:        *projectFlag,
+		GCPMemberCache: gcpMemberCache,
 	})
+	if err != nil {
+		klog.Fatalf("process failed: %v", err)
+	}
 
 	artifacts := []*platform.Artifact{a}
 

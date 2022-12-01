@@ -6,18 +6,12 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
-	"os/user"
 	"sort"
 	"strings"
-	"time"
 
 	"gopkg.in/yaml.v3"
 	"k8s.io/klog/v2"
 )
-
-var gcpOrgSteps = []string{
-	"Execute 'acls-in-yaml --gcloud-iam-projects=<project>'",
-}
 
 // hideRoles are roles which every org member has; this is hidden to remove output spam.
 var hideRoles = map[string]bool{
@@ -54,15 +48,15 @@ type gcpRoleType struct {
 	Name string `yaml:"name"`
 }
 
-type gcpMemberCache = map[string][]gcpGroupMembership
+type GCPMemberCache = map[string][]gcpGroupMembership
 
 // NewGCPMemberCache returns a populated structure to be used for caching membership lookups.
-func NewGCPMemberCache() gcpMemberCache {
+func NewGCPMemberCache() GCPMemberCache {
 	return map[string][]gcpGroupMembership{}
 }
 
 // expandGCPMembers expands groups into lists of users.
-func expandGCPMembers(identity string, project string, cache gcpMemberCache) ([]gcpGroupMembership, error) {
+func expandGCPMembers(identity string, project string, cache GCPMemberCache) ([]gcpGroupMembership, error) {
 	if cache[identity] != nil {
 		return cache[identity], nil
 	}
@@ -129,8 +123,27 @@ func highestGCPRoleType(types []gcpRoleType) string {
 	return highest
 }
 
-// GoogleCloudIAMPolicy uses gcloud to generate a list of GCP members.
-func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMemberCache) (*Artifact, error) {
+// GoogleCloudProjectIAM uses gcloud to generate a list of GCP members.
+type GoogleCloudProjectIAM struct{}
+
+func (p *GoogleCloudProjectIAM) Description() ProcessorDescription {
+	return ProcessorDescription{
+		Kind: "gcp-project-iam",
+		Name: "Google Cloud Project IAM Policies",
+		Steps: []string{
+			"Execute 'acls-in-yaml --gcloud-iam-projects=<project>'",
+		},
+	}
+}
+
+func (p *GoogleCloudProjectIAM) Process(c Config) (*Artifact, error) {
+	src, err := NewSourceFromConfig(c, p)
+	if err != nil {
+		return nil, fmt.Errorf("source: %w", err)
+	}
+	a := &Artifact{Metadata: src}
+
+	project := c.Project
 	cmd := exec.Command("gcloud", "projects", "get-ancestors-iam-policy", project)
 	stdout, err := cmd.Output()
 	if err != nil {
@@ -155,25 +168,7 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 		docs = append(docs, doc)
 	}
 
-	cu, err := user.Current()
-	if err != nil {
-		return nil, fmt.Errorf("user: %w", err)
-	}
-
-	a := &Artifact{
-		Metadata: &Source{
-			Kind:        "gcp_iam_policy",
-			GeneratedAt: time.Now(),
-			GeneratedBy: cu.Username,
-			SourceDate:  time.Now().Format(SourceDateFormat),
-			Process:     renderSteps(gcpOrgSteps, project),
-		},
-	}
-
 	users := map[string]*User{}
-	if identityProject == "" {
-		identityProject = project
-	}
 
 	// CONFUSION ALERT!@$!@$!@
 	// Google Groups have a single role (owner, member, admin) - we refer to those as "role"
@@ -183,6 +178,11 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 	seenWithPerm := map[string]map[string]bool{}
 
 	groups := map[string]*Group{}
+
+	identityProject := c.IdentityReferenceProject
+	if identityProject == "" {
+		identityProject = c.Project
+	}
 
 	// YAML is parsed, lets figure out the users & roles
 	for _, d := range docs {
@@ -196,7 +196,7 @@ func GoogleCloudIAMPolicy(project string, identityProject string, cache gcpMembe
 			// bindMembers may be individuals or groups
 			for _, bindMember := range binding.Members {
 				// Expand all groups into individuals
-				expanded, err := expandGCPMembers(bindMember, identityProject, cache)
+				expanded, err := expandGCPMembers(bindMember, identityProject, c.GCPMemberCache)
 				if err != nil {
 					return nil, fmt.Errorf("expand members %s: %w", bindMember, err)
 				}

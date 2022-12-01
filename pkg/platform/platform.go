@@ -3,7 +3,6 @@ package platform
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -99,8 +98,7 @@ func NewSource(path string) (*Source, error) {
 
 // NewSourceFromConfig begins processing a source file, returning a source struct.
 func NewSourceFromConfig(c Config, p Processor) (*Source, error) {
-
-	content, err := ioutil.ReadAll(c.Reader)
+	content, err := io.ReadAll(c.Reader)
 	if err != nil {
 		return nil, fmt.Errorf("readall: %w", err)
 	}
@@ -213,17 +211,20 @@ func renderSteps(steps []string, id string) []string {
 }
 
 type ProcessorDescription struct {
-	Kind            string
-	Name            string
-	Steps           []string
-	SupportsProject bool
+	Kind           string
+	Name           string
+	Steps          []string
+	OptionalFields []string
 }
 
 type Config struct {
-	Path    string
-	Reader  io.Reader
-	Project string
-	Kind    string
+	Path                     string
+	Reader                   io.Reader
+	Project                  string
+	Kind                     string
+	IdentityReferenceProject string
+
+	GCPMemberCache GCPMemberCache
 }
 
 type Processor interface {
@@ -232,16 +233,33 @@ type Processor interface {
 }
 
 func New(kind string) (Processor, error) {
-	switch kind {
-	case "1password-team":
-		return &OnePasswordTeam{}, nil
-	default:
-		return nil, fmt.Errorf("unknown kind: %q", kind)
+	for _, p := range Available() {
+		if kind == p.Description().Kind {
+			return p, nil
+		}
 	}
+	return nil, fmt.Errorf("unknown kind: %q", kind)
 }
 
 func Available() []Processor {
 	return []Processor{
 		&OnePasswordTeam{},
+		&SecureframePersonnel{},
+		&VercelMembers{},
+		&WebflowMembers{},
+		&GoogleWorkspaceUserAudit{},
+		&GoogleWorkspaceUsers{},
+		&GhostStaff{},
+		&KolideUsers{},
+		&GoogleCloudProjectIAM{},
 	}
+}
+
+func AvailableKinds() []string {
+	kinds := []string{}
+	for _, p := range Available() {
+		kinds = append(kinds, p.Description().Kind)
+	}
+	sort.Strings(kinds)
+	return kinds
 }
