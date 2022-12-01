@@ -38,7 +38,7 @@ func main() {
 	// klog.InitFlags(nil)
 	flag.Parse()
 
-	if *serveFlag {
+	if *serveFlag || os.Getenv("SERVE_MODE") == "1" {
 		s := server.New()
 		if err := s.Serve(); err != nil {
 			log.Fatalf("serve failed: %v", err)
