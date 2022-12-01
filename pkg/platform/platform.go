@@ -243,15 +243,17 @@ func New(kind string) (Processor, error) {
 
 func Available() []Processor {
 	return []Processor{
-		&OnePasswordTeam{},
-		&SecureframePersonnel{},
-		&VercelMembers{},
-		&WebflowMembers{},
+		&GhostStaff{},
+		//	&GoogleCloudProjectIAM{},
 		&GoogleWorkspaceUserAudit{},
 		&GoogleWorkspaceUsers{},
-		&GhostStaff{},
+		&GithubOrgMembers{},
 		&KolideUsers{},
-		&GoogleCloudProjectIAM{},
+		&OnePasswordTeam{},
+		&SecureframePersonnel{},
+		&SlackMembers{},
+		&VercelMembers{},
+		&WebflowMembers{},
 	}
 }
 
