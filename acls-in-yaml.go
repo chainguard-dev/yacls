@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/chainguard-dev/acls-in-yaml/pkg/axs"
+	"github.com/chainguard-dev/acls-in-yaml/pkg/platform"
+	"github.com/chainguard-dev/acls-in-yaml/pkg/server"
 
 	"gopkg.in/yaml.v3"
 	"k8s.io/klog/v2"
@@ -24,132 +26,53 @@ func steps(s []string) string {
 }
 
 var (
-	googleWorkspaceAuditCSVFlag = flag.String("google-audit-csv", "", fmt.Sprintf("Path to Google Workspace Audit CSV (delayed).\n%s", steps(axs.GoogleWorkspaceAuditSteps)))
-	googleWorkspaceUsersCSVFlag = flag.String("google-users-csv", "", fmt.Sprintf("Path to Google Workspace Users CSV (live)\n%s", steps(axs.GoogleWorkspaceUsersSteps)))
-	githubOrgMembersCSVFlag     = flag.String("github-org-csv", "", fmt.Sprintf("Path to Github Org Members CSV\n%s", steps(axs.GithubOrgSteps)))
-	slackMembersCSVFlag         = flag.String("slack-csv", "", fmt.Sprintf("Path to Slack Members CSV\n%s", steps(axs.SlackSteps)))
-	onePasswordFlag             = flag.String("1password-csv", "", fmt.Sprintf("Path to 1Password Team CSV\n%s", steps(axs.OnePasswordSteps)))
-	kolideUsersCSVFlag          = flag.String("kolide-csv", "", fmt.Sprintf("Path to Kolide Users CSV\n%s", steps(axs.KolideSteps)))
-	vercelMembersHTMLFlag       = flag.String("vercel-html", "", fmt.Sprintf("Path to Vercel Members HTML\n%s", steps(axs.VercelSteps)))
-	ghostStaffHTMLFlag          = flag.String("ghost-html", "", fmt.Sprintf("Path to Ghost Staff HTML\n%s", steps(axs.GhostSteps)))
-	webflowMembersHTMLFlag      = flag.String("webflow-html", "", fmt.Sprintf("Path to Ghost Members HTML\n%s", steps(axs.WebflowSteps)))
-	secureframePersonnelCSVFlag = flag.String("secureframe-csv", "", fmt.Sprintf("Path to Secureframe Personnel CSV\n%s", steps(axs.SecureframeSteps)))
-	gcpIAMProjectsFlag          = flag.String("gcp-projects", "", "Comma-separated list of GCP projects to fetch IAM policies for")
-	gcpIdentityProject          = flag.String("gcp-identity-project", "", "Optional GCP project for group resolution (requires cloudidentity API)")
-	outDirFlag                  = flag.String("out-dir", "", "output YAML files to this directory")
+	inputFlag   = flag.String("input", "", "path to input file")
+	projectFlag = flag.String("project", "", "specific project to process within the kind")
+	kindFlag    = flag.String("kind", "", fmt.Sprintf("kind of input to process. Valid values: \n  * %s", strings.Join(platform.AvailableKinds(), "\n  * ")))
+	serveFlag   = flag.Bool("serve", false, "Enable server mode (web UI)")
+	outDirFlag  = flag.String("out-dir", "", "output YAML files to this directory")
 )
 
 func main() {
-	klog.InitFlags(nil)
+	// Pollutes --help with flags no one will need
+	// klog.InitFlags(nil)
 	flag.Parse()
 
-	artifacts := []*axs.Artifact{}
-
-	if *googleWorkspaceAuditCSVFlag != "" {
-		a, err := axs.GoogleWorkspaceAudit(*googleWorkspaceAuditCSVFlag)
-		if err != nil {
-			klog.Exitf("google workspace audit: %v", err)
+	if *serveFlag {
+		s := server.New()
+		if err := s.Serve(); err != nil {
+			log.Fatalf("serve failed: %v", err)
 		}
-
-		artifacts = append(artifacts, a)
+		os.Exit(0)
 	}
 
-	if *googleWorkspaceUsersCSVFlag != "" {
-		a, err := axs.GoogleWorkspaceUsers(*googleWorkspaceUsersCSVFlag)
-		if err != nil {
-			klog.Exitf("google workspace users: %v", err)
-		}
-
-		artifacts = append(artifacts, a)
+	p, err := platform.New(*kindFlag)
+	if err != nil {
+		klog.Fatalf("unable to create %q platform: %v", *kindFlag, err)
 	}
 
-	if *githubOrgMembersCSVFlag != "" {
-		a, err := axs.GithubOrgMembers(*githubOrgMembersCSVFlag)
-		if err != nil {
-			klog.Exitf("github org members: %v", err)
-		}
+	f, err := os.Open(*inputFlag)
+	if err != nil {
+		klog.Fatalf("unable to open: %v", err)
+	}
+	defer f.Close()
 
-		artifacts = append(artifacts, a)
+	gcpMemberCache := platform.NewGCPMemberCache()
+
+	a, err := p.Process(platform.Config{
+		Path:           *inputFlag,
+		Reader:         f,
+		Project:        *projectFlag,
+		GCPMemberCache: gcpMemberCache,
+	})
+	if err != nil {
+		klog.Fatalf("process failed: %v", err)
 	}
 
-	if *slackMembersCSVFlag != "" {
-		a, err := axs.SlackMembers(*slackMembersCSVFlag)
-		if err != nil {
-			klog.Exitf("slack members: %v", err)
-		}
-
-		artifacts = append(artifacts, a)
-	}
-
-	if *onePasswordFlag != "" {
-		a, err := axs.OnePasswordTeam(*onePasswordFlag)
-		if err != nil {
-			klog.Exitf("1Password members: %v", err)
-		}
-
-		artifacts = append(artifacts, a)
-	}
-
-	if *kolideUsersCSVFlag != "" {
-		a, err := axs.KolideUsers(*kolideUsersCSVFlag)
-		if err != nil {
-			klog.Exitf("kolide users: %v", err)
-		}
-
-		artifacts = append(artifacts, a)
-	}
-
-	if *vercelMembersHTMLFlag != "" {
-		a, err := axs.VercelMembers(*vercelMembersHTMLFlag)
-		if err != nil {
-			klog.Exitf("vercel users: %v", err)
-		}
-
-		artifacts = append(artifacts, a)
-	}
-
-	if *webflowMembersHTMLFlag != "" {
-		a, err := axs.WebflowMembers(*webflowMembersHTMLFlag)
-		if err != nil {
-			klog.Exitf("webflow users: %v", err)
-		}
-
-		artifacts = append(artifacts, a)
-	}
-
-	if *ghostStaffHTMLFlag != "" {
-		a, err := axs.GhostStaff(*ghostStaffHTMLFlag)
-		if err != nil {
-			klog.Exitf("ghost staff: %v", err)
-		}
-
-		artifacts = append(artifacts, a)
-	}
-
-	if *secureframePersonnelCSVFlag != "" {
-		a, err := axs.SecureframePersonnel(*secureframePersonnelCSVFlag)
-		if err != nil {
-			klog.Exitf("secureframe personnel: %v", err)
-		}
-
-		artifacts = append(artifacts, a)
-	}
-
-	if *gcpIAMProjectsFlag != "" {
-		cache := axs.NewGCPMemberCache()
-		projects := strings.Split(*gcpIAMProjectsFlag, ",")
-		for _, p := range projects {
-			a, err := axs.GoogleCloudIAMPolicy(p, *gcpIdentityProject, cache)
-			if err != nil {
-				klog.Exitf("gcp iam: %v", err)
-			}
-
-			artifacts = append(artifacts, a)
-		}
-	}
+	artifacts := []*platform.Artifact{a}
 
 	for _, a := range artifacts {
-		axs.FinalizeArtifact(a)
+		platform.FinalizeArtifact(a)
 
 		bs, err := yaml.Marshal(a)
 		if err != nil {

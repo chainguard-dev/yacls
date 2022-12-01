@@ -1,0 +1,90 @@
+<html lang="en">
+<head>
+    <title>acls-in-yaml</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f7f7fa;
+            padding: 1em;
+        }
+
+        h1 {
+            font-size: larger;
+            color: rgb(66,133,244);
+            margin-bottom: 0em;
+        }
+
+        ul {
+            padding: 0;
+            margin-bottom: 3em;
+            list-style-type: none;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: small;
+            border: 1px solid rgb(66,133,244);
+            margin: 1em;
+            padding: 2em;
+            max-width: 80em;
+            color: #000;
+            background-color: #f0f0f0;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .board p {
+            font-size: small;
+            color: #999;
+            text-align: center;
+        }
+
+        h3 {
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>acls-in-yaml<h1>
+
+    {{ if .Chosen }}
+        <h2>{{ .Desc.Name }}</h2>
+
+
+        {{ if .Output }}
+            <p>Processed output:</p>
+
+            <pre>{{ printf "%s" .Output }}</pre>
+
+            <p>TODO(t): Insert Pull Request Form</p>
+        {{ else }}
+            <p>Steps to gather data:</p>
+            <ol>
+                {{ range .Desc.Steps }}
+                <li>{{ . }}</li>
+                {{ end }}
+            </ol>
+
+            <form method="POST" action="/submit" enctype="multipart/form-data">
+                <input type="hidden" name="kind" value="{{ .Chosen }}">
+                <input type="file" name="file">
+                <input type="submit" name="process" value="Process">
+            </form>
+        {{ end }}
+    {{ else }}
+        <form method="POST" action="/submit" enctype="multipart/form-data">
+        <select id="kind" name="kind">
+          {{ range $i, $proc := .Available }}<option value="{{ $proc.Description.Kind }}">{{ $proc.Description.Name }}</option>{{ end }}
+        </select>
+
+        <input type="submit" value="Start">
+        </form>
+    {{ end }}
+</body>
+</html>

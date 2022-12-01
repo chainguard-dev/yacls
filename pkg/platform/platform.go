@@ -1,7 +1,8 @@
-package axs
+package platform
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -95,6 +96,40 @@ func NewSource(path string) (*Source, error) {
 	}, nil
 }
 
+// NewSourceFromConfig begins processing a source file, returning a source struct.
+func NewSourceFromConfig(c Config, p Processor) (*Source, error) {
+	content, err := io.ReadAll(c.Reader)
+	if err != nil {
+		return nil, fmt.Errorf("readall: %w", err)
+	}
+
+	var mtime time.Time
+	if c.Path != "" {
+		fi, err := os.Stat(c.Path)
+		if err != nil {
+			return nil, fmt.Errorf("stat: %w", err)
+		}
+
+		mtime = fi.ModTime()
+	}
+
+	cu, err := user.Current()
+	if err != nil {
+		return nil, fmt.Errorf("user: %w", err)
+	}
+
+	desc := p.Description()
+	return &Source{
+		GeneratedAt: time.Now(),
+		GeneratedBy: cu.Username,
+		SourceDate:  mtime.Format(SourceDateFormat),
+		content:     content,
+		Kind:        desc.Kind,
+		Name:        desc.Name,
+		Process:     renderSteps(desc.Steps, c.Path),
+	}, nil
+}
+
 // FinalizeArtifact does some final manipulation on an artifact for consistency.
 func FinalizeArtifact(a *Artifact) {
 	// Make the output more deterministic
@@ -173,4 +208,60 @@ func renderSteps(steps []string, id string) []string {
 		out = append(out, rendered)
 	}
 	return out
+}
+
+type ProcessorDescription struct {
+	Kind           string
+	Name           string
+	Steps          []string
+	OptionalFields []string
+}
+
+type Config struct {
+	Path                     string
+	Reader                   io.Reader
+	Project                  string
+	Kind                     string
+	IdentityReferenceProject string
+
+	GCPMemberCache GCPMemberCache
+}
+
+type Processor interface {
+	Description() ProcessorDescription
+	Process(c Config) (*Artifact, error)
+}
+
+func New(kind string) (Processor, error) {
+	for _, p := range Available() {
+		if kind == p.Description().Kind {
+			return p, nil
+		}
+	}
+	return nil, fmt.Errorf("unknown kind: %q", kind)
+}
+
+func Available() []Processor {
+	return []Processor{
+		&GhostStaff{},
+		//	&GoogleCloudProjectIAM{},
+		&GoogleWorkspaceUserAudit{},
+		&GoogleWorkspaceUsers{},
+		&GithubOrgMembers{},
+		&KolideUsers{},
+		&OnePasswordTeam{},
+		&SecureframePersonnel{},
+		&SlackMembers{},
+		&VercelMembers{},
+		&WebflowMembers{},
+	}
+}
+
+func AvailableKinds() []string {
+	kinds := []string{}
+	for _, p := range Available() {
+		kinds = append(kinds, p.Description().Kind)
+	}
+	sort.Strings(kinds)
+	return kinds
 }

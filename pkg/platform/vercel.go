@@ -1,4 +1,4 @@
-package axs
+package platform
 
 import (
 	"bytes"
@@ -10,25 +10,30 @@ import (
 	"golang.org/x/text/language"
 )
 
-var VercelSteps = []string{
-	"Open https://vercel.com/",
-	"Select your company/team",
-	"Click 'Settings'",
-	"Click 'Members'",
-	"Save this page (Complete)",
-	"Collect resulting .html file for analysis (the other files are not necessary)",
-	"Execute 'acls-in-yaml --vercel-members-html=<path>'",
+// VercelMembers parses the HTML output of the Vercel Members page.
+type VercelMembers struct{}
+
+func (p *VercelMembers) Description() ProcessorDescription {
+	return ProcessorDescription{
+		Kind: "vercel-members",
+		Name: "Vercel Site Permissions",
+		Steps: []string{
+			"Open https://vercel.com/",
+			"Select your company/team",
+			"Click 'Settings'",
+			"Click 'Members'",
+			"Save this page (Complete)",
+			"Collect resulting .html file for analysis (the other files are not necessary)",
+			"Execute 'acls-in-yaml --vercel-members-html=<path>'",
+		},
+	}
 }
 
-// VercelMembers parses the HTML output of the Vercel Members page.
-func VercelMembers(path string) (*Artifact, error) {
-	src, err := NewSource(path)
+func (p *VercelMembers) Process(c Config) (*Artifact, error) {
+	src, err := NewSourceFromConfig(c, p)
 	if err != nil {
 		return nil, fmt.Errorf("source: %w", err)
 	}
-	src.Kind = "vercel_members"
-	src.Name = "Vercel Members"
-	src.Process = renderSteps(VercelSteps, path)
 	a := &Artifact{Metadata: src}
 
 	// Load the HTML document
