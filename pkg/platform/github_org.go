@@ -12,7 +12,7 @@ type GithubOrgMembers struct{}
 
 func (p *GithubOrgMembers) Description() ProcessorDescription {
 	return ProcessorDescription{
-		Kind: "github-org",
+		Kind: "github",
 		Name: "Github Organization Members",
 		Steps: []string{
 			"Open https://github.com/orgs/<org>/people",
