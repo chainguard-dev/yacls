@@ -16,7 +16,7 @@ type GhostStaff struct{}
 
 func (p *GhostStaff) Description() ProcessorDescription {
 	return ProcessorDescription{
-		Kind: "ghost-staff",
+		Kind: "ghost",
 		Name: "Ghost Blog Permissions",
 		Steps: []string{
 			"Open the corporate Ghost blog",
@@ -25,7 +25,7 @@ func (p *GhostStaff) Description() ProcessorDescription {
 			"Zoom out so that all users are visible on one screen",
 			"Save this page (Complete)",
 			"Collect resulting .html file for analysis (the other files are not necessary)",
-			"Execute 'acls-in-yaml --ghost-staff-html={{.Path}}'",
+			"Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'",
 		},
 	}
 }

@@ -68,6 +68,7 @@ func main() {
 		Path:               *inputFlag,
 		Reader:             f,
 		Project:            *projectFlag,
+		Kind:               *kindFlag,
 		GCPIdentityProject: *gcpIdentityProjectFlag,
 		GCPMemberCache:     gcpMemberCache,
 	})
@@ -93,7 +94,7 @@ func main() {
 		if *outDirFlag != "" {
 			name := a.Metadata.Kind + ".yaml"
 			if a.Metadata.ID != "" {
-				name = a.Metadata.Kind + "-" + a.Metadata.ID + ".yaml"
+				name = a.Metadata.Kind + "_" + a.Metadata.ID + ".yaml"
 			}
 
 			outPath := filepath.Join(*outDirFlag, name)

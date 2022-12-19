@@ -18,13 +18,13 @@ type OnePasswordTeam struct{}
 
 func (p *OnePasswordTeam) Description() ProcessorDescription {
 	return ProcessorDescription{
-		Kind: "1password-team",
+		Kind: "1password",
 		Name: "1Password Team Members",
 		Steps: []string{
 			"To be documented",
 			"Download resulting CSV file for analysis",
 
-			"Execute 'acls-in-yaml --kind=1password-team --input={{.Path}}'",
+			"Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'",
 		},
 	}
 }

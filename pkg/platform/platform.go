@@ -62,40 +62,6 @@ type Source struct {
 	content []byte
 }
 
-// NewSource begins processing a source file, returning a source struct.
-func NewSource(path string) (*Source, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("open: %w", err)
-	}
-
-	defer f.Close()
-
-	fi, err := os.Stat(path)
-	if err != nil {
-		return nil, fmt.Errorf("stat: %w", err)
-	}
-
-	date := fi.ModTime()
-
-	cu, err := user.Current()
-	if err != nil {
-		return nil, fmt.Errorf("user: %w", err)
-	}
-
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Source{
-		GeneratedAt: time.Now(),
-		GeneratedBy: cu.Username,
-		SourceDate:  date.Format(SourceDateFormat),
-		content:     content,
-	}, nil
-}
-
 // NewSourceFromConfig begins processing a source file, returning a source struct.
 func NewSourceFromConfig(c Config, p Processor) (*Source, error) {
 	var content []byte
@@ -108,7 +74,7 @@ func NewSourceFromConfig(c Config, p Processor) (*Source, error) {
 		}
 	}
 
-	var mtime time.Time
+	mtime := time.Now()
 	if c.Path != "" {
 		fi, err := os.Stat(c.Path)
 		if err != nil {
@@ -199,6 +165,14 @@ func FinalizeArtifact(a *Artifact) {
 
 // updates {{.Path}} or {{.Project}} in a list of steps.
 func renderSteps(steps []string, c Config) []string {
+	// Dummy output
+	if c.Path == "" {
+		c.Path = "<path>"
+	}
+	if c.Project == "" {
+		c.Project = "<project>"
+	}
+
 	out := []string{}
 	for _, r := range steps {
 		r := r

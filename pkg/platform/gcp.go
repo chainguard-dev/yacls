@@ -128,10 +128,10 @@ type GoogleCloudProjectIAM struct{}
 
 func (p *GoogleCloudProjectIAM) Description() ProcessorDescription {
 	return ProcessorDescription{
-		Kind: "gcp-project-iam",
+		Kind: "gcp",
 		Name: "Google Cloud Project IAM Policies",
 		Steps: []string{
-			"Execute 'acls-in-yaml --kind=gcp --project={{.Project}}'",
+			"Execute 'acls-in-yaml --kind={{.Kind}} --project={{.Project}}'",
 		},
 	}
 }
@@ -200,13 +200,13 @@ func (p *GoogleCloudProjectIAM) Process(c Config) (*Artifact, error) {
 				if err != nil {
 					return nil, fmt.Errorf("expand members %s: %w", bindMember, err)
 				}
-				klog.Infof("m: %s -- role %s / members %s / expanded: %s", bindMember, binding.Role, binding.Members, expanded)
+				klog.V(1).Infof("m: %s -- role %s / members %s / expanded: %s", bindMember, binding.Role, binding.Members, expanded)
 
 				for _, membership := range expanded {
 					// id is the individuals login
 					id := membership.Member.ID
 					if users[id] == nil {
-						klog.Infof("new user: %s", id)
+						klog.V(1).Infof("new user: %s", id)
 						users[id] = &User{Account: id}
 						seenWithPerm[id] = map[string]bool{}
 						seenInGrp[id] = map[string]bool{}
@@ -229,7 +229,7 @@ func (p *GoogleCloudProjectIAM) Process(c Config) (*Artifact, error) {
 					_, grp, _ := strings.Cut(bindMember, ":")
 
 					if groups[grp] == nil {
-						klog.Infof("new group: %s with members: %s - permission: %s", grp, expanded, perm)
+						klog.V(1).Infof("new group: %s with members: %s - permission: %s", grp, expanded, perm)
 						groups[grp] = &Group{Name: grp}
 						seenWithPerm[grp] = map[string]bool{}
 					}

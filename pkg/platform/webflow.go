@@ -16,13 +16,13 @@ type WebflowMembers struct{}
 
 func (p *WebflowMembers) Description() ProcessorDescription {
 	return ProcessorDescription{
-		Kind: "webflow-members",
+		Kind: "webflow",
 		Name: "Webflow Site Permissions",
 		Steps: []string{
 			"Open https://webflow.com/dashboard/sites/<site>/members",
 			"Save this page (Complete)",
 			"Collect resulting .html file for analysis (the other files are not necessary)",
-			"Execute 'acls-in-yaml --webflow-members-html={{.Path}}'",
+			"Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'",
 		},
 	}
 }

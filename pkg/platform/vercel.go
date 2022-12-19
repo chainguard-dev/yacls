@@ -15,7 +15,7 @@ type VercelMembers struct{}
 
 func (p *VercelMembers) Description() ProcessorDescription {
 	return ProcessorDescription{
-		Kind: "vercel-members",
+		Kind: "vercel",
 		Name: "Vercel Site Permissions",
 		Steps: []string{
 			"Open https://vercel.com/",
@@ -24,7 +24,7 @@ func (p *VercelMembers) Description() ProcessorDescription {
 			"Click 'Members'",
 			"Save this page (Complete)",
 			"Collect resulting .html file for analysis (the other files are not necessary)",
-			"Execute 'acls-in-yaml --vercel-members-html={{.Path}}'",
+			"Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'",
 		},
 	}
 }

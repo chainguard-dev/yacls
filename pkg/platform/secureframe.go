@@ -12,7 +12,7 @@ type SecureframePersonnel struct{}
 
 func (p *SecureframePersonnel) Description() ProcessorDescription {
 	return ProcessorDescription{
-		Kind: "secureframe-personnel",
+		Kind: "secureframe",
 		Name: "Secureframe Personnel",
 		Steps: []string{
 			"Open https://app.secureframe.com/personnel",
@@ -20,7 +20,7 @@ func (p *SecureframePersonnel) Description() ProcessorDescription {
 			"Click Export...",
 			"Select 'Direct Download'",
 			"Download resulting CSV file for analysis",
-			"Execute 'acls-in-yaml --secureframe-personnel-csv={{.Path}}'",
+			"Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'",
 		},
 	}
 }
