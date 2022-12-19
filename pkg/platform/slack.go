@@ -12,7 +12,7 @@ type SlackMembers struct{}
 
 func (p *SlackMembers) Description() ProcessorDescription {
 	return ProcessorDescription{
-		Kind: "slack-org-members",
+		Kind: "slack",
 		Name: "Slack Members",
 		Steps: []string{
 			"Open Slack",

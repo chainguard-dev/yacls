@@ -16,7 +16,7 @@ type WebflowMembers struct{}
 
 func (p *WebflowMembers) Description() ProcessorDescription {
 	return ProcessorDescription{
-		Kind: "webflow-members",
+		Kind: "webflow",
 		Name: "Webflow Site Permissions",
 		Steps: []string{
 			"Open https://webflow.com/dashboard/sites/<site>/members",

@@ -15,7 +15,7 @@ type VercelMembers struct{}
 
 func (p *VercelMembers) Description() ProcessorDescription {
 	return ProcessorDescription{
-		Kind: "vercel-members",
+		Kind: "vercel",
 		Name: "Vercel Site Permissions",
 		Steps: []string{
 			"Open https://vercel.com/",

@@ -12,7 +12,7 @@ type SecureframePersonnel struct{}
 
 func (p *SecureframePersonnel) Description() ProcessorDescription {
 	return ProcessorDescription{
-		Kind: "secureframe-personnel",
+		Kind: "secureframe",
 		Name: "Secureframe Personnel",
 		Steps: []string{
 			"Open https://app.secureframe.com/personnel",

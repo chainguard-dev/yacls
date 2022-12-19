@@ -18,7 +18,7 @@ type OnePasswordTeam struct{}
 
 func (p *OnePasswordTeam) Description() ProcessorDescription {
 	return ProcessorDescription{
-		Kind: "1password-team",
+		Kind: "1password",
 		Name: "1Password Team Members",
 		Steps: []string{
 			"To be documented",

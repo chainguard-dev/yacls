@@ -12,7 +12,7 @@ type KolideUsers struct{}
 
 func (p *KolideUsers) Description() ProcessorDescription {
 	return ProcessorDescription{
-		Kind: "kolide-users",
+		Kind: "kolide",
 		Name: "Kolide Users",
 		Steps: []string{
 			"Open https://k2.kolide.com/3361/settings/admin/users",
