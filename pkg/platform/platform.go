@@ -1,13 +1,13 @@
 package platform
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 	"io"
 	"os"
 	"os/user"
-	"path/filepath"
 	"sort"
-	"strings"
 	"time"
 )
 
@@ -131,7 +131,7 @@ func NewSourceFromConfig(c Config, p Processor) (*Source, error) {
 		content:     content,
 		Kind:        desc.Kind,
 		Name:        desc.Name,
-		Process:     renderSteps(desc.Steps, c.Path),
+		Process:     renderSteps(desc.Steps, c),
 	}, nil
 }
 
@@ -197,20 +197,23 @@ func FinalizeArtifact(a *Artifact) {
 	a.GroupCount = len(a.Groups)
 }
 
-// updates <path> or <project> in a list of steps.
-func renderSteps(steps []string, id string) []string {
+// updates {{.Path}} or {{.Project}} in a list of steps.
+func renderSteps(steps []string, c Config) []string {
 	out := []string{}
 	for _, r := range steps {
-		rendered := r
-		if strings.Contains(rendered, "<path>") {
-			rendered = strings.Replace(r, "<path>", filepath.Base(id), 1)
+		r := r
+		t, err := template.New("step").Parse(r)
+		if err != nil {
+			panic(fmt.Sprintf("unable to parse step %q: %v", r, err))
 		}
 
-		if strings.Contains(rendered, "<project>") {
-			rendered = strings.Replace(r, "<project>", id, 1)
+		bs := bytes.NewBufferString("")
+		err = t.Execute(bs, c)
+		if err != nil {
+			panic(fmt.Sprintf("unable to parse step %q: %v", r, err))
 		}
 
-		out = append(out, rendered)
+		out = append(out, bs.String())
 	}
 	return out
 }
