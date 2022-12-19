@@ -12,14 +12,14 @@ type GithubOrgMembers struct{}
 
 func (p *GithubOrgMembers) Description() ProcessorDescription {
 	return ProcessorDescription{
-		Kind: "github",
+		Kind: "github-org",
 		Name: "Github Organization Members",
 		Steps: []string{
 			"Open https://github.com/orgs/<org>/people",
 			"Click Export",
 			"Select 'CSV'",
 			"Download resulting CSV file for analysis",
-			"Execute 'acls-in-yaml --kind=github-org-members --input={{.Path}}'",
+			"Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'",
 		},
 	}
 }

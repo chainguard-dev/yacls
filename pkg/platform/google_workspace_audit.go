@@ -33,7 +33,7 @@ func (p *GoogleWorkspaceUserAudit) Description() ProcessorDescription {
 			"Select All Columns",
 			"Click CSV",
 			"Download resulting CSV file for analysis",
-			"Execute 'acls-in-yaml --kind=google-workspace-audit --input={{.Path}}'",
+			"Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'",
 		},
 	}
 }

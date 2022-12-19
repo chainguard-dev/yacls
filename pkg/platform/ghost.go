@@ -25,7 +25,7 @@ func (p *GhostStaff) Description() ProcessorDescription {
 			"Zoom out so that all users are visible on one screen",
 			"Save this page (Complete)",
 			"Collect resulting .html file for analysis (the other files are not necessary)",
-			"Execute 'acls-in-yaml --kind=ghost-staff --input={{.Path}}'",
+			"Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'",
 		},
 	}
 }

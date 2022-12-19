@@ -24,7 +24,7 @@ func (p *OnePasswordTeam) Description() ProcessorDescription {
 			"To be documented",
 			"Download resulting CSV file for analysis",
 
-			"Execute 'acls-in-yaml --kind=1password-team --input={{.Path}}'",
+			"Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'",
 		},
 	}
 }

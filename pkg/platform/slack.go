@@ -22,7 +22,7 @@ func (p *SlackMembers) Description() ProcessorDescription {
 			"Select 'Export Member List'",
 			"Download resulting CSV file for analysis",
 
-			"Execute 'acls-in-yaml --slack-members-csv={{.Path}}'",
+			"Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'",
 		},
 	}
 }
