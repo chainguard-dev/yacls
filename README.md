@@ -89,88 +89,124 @@ You can also pass in a single input file at a time.
 
 ## Usage
 
-`acls-in-yaml` takes many flags, though for most cases it is only necessary to pass one in at a time:
+Flags for `acls-in-yaml`:
 
 ```yaml
-  -1password-csv string
-     Path to 1Password Team CSV
-     Steps:
-       * To be documented
-       * Download resulting CSV file for analysis
   -gcp-identity-project string
-     Optional GCP project for group resolution (requires cloudidentity API)
-  -gcp-projects string
-     Comma-separated list of GCP projects to fetch IAM policies for
-  -ghost-html string
-     Path to Ghost Staff HTML
-     Steps:
-       * Open the corporate Ghost blog
-       * Click 'Settings'
-       * Click 'Staff'
-       * Zoom out so that all users are visible on one screen
-       * Save this page (Complete)
-       * Collect resulting .html file for analysis (the other files are not necessary)
-  -github-org-csv string
-     Path to Github Org Members CSV
-     Steps:
-       * Open https://github.com/orgs/<org>/people
-       * Click Export
-       * Select 'CSV'
-       * Download resulting CSV file for analysis
-  -google-audit-csv string
-     Path to Google Workspace Audit CSV (delayed).
-     Steps:
-       * Open https://admin.google.com/ac/reporting/report/user/accounts
-       * Click Download icon
-       * Select All Columns
-       * Click CSV
-       * Download resulting CSV file for analysis
-  -google-users-csv string
-     Path to Google Workspace Users CSV (live)
-     Steps:
-       * Open https://admin.google.com/ac/users
-       * Click Download users
-       * Select 'All user info Columns'
-       * Select 'Comma-separated values (.csv)'
-       * Download resulting CSV file for analysis
-  -kolide-csv string
-     Path to Kolide Users CSV
-     Steps:
-       * Open https://k2.kolide.com/3361/settings/admin/users
-       * Click CSV
-       * Download resulting CSV file for analysis
-  -secureframe-csv string
-     Path to Secureframe Personnel CSV
-     Steps:
-       * Open https://app.secureframe.com/personnel
-       * Deselect any active filters
-       * Click Export...
-       * Select 'Direct Download'
-       * Download resulting CSV file for analysis
-  -slack-csv string
-     Path to Slack Members CSV
-     Steps:
-       * Open Slack
-       * Click <org name>▼
-       * Select 'Settings & Administration'
-       * Select 'Manage Members'
-       * Select 'Export Member List'
-       * Download resulting CSV file for analysis
-  -vercel-html string
-     Path to Vercel Members HTML
-     Steps:
-       * Open https://vercel.com/
-       * Select your company/team
-       * Click 'Settings'
-       * Click 'Members'
-       * Save this page (Complete)
-       * Collect resulting .html file for analysis (the other files are not necessary)
-  -webflow-html string
-     Path to Ghost Members HTML
-     Steps:
-       * Open https://webflow.com/dashboard/sites/<site>/members
-       * Save this page (Complete)
-       * Collect resulting .html file for analysis (the other files are not necessary)
+     project to use for GCP Cloud Identity lookups
+  -input string
+     path to input file
+  -kind string
+     kind of input to process. valid values:
+       * 1password
+       * gcp
+       * ghost
+       * github-org
+       * google-workspace-audit
+       * google-workspace-users
+       * kolide
+       * secureframe
+       * slack
+       * vercel
+       * webflow
+
+     Detailed steps for each kind:
+
+     # Ghost Blog Permissions
+
+      * Open the corporate Ghost blog
+      * Click 'Settings'
+      * Click 'Staff'
+      * Zoom out so that all users are visible on one screen
+      * Save this page (Complete)
+      * Collect resulting .html file for analysis (the other files are not necessary)
+      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+
+     # Github Organization Members
+
+      * Open https://github.com/orgs/<org>/people
+      * Click Export
+      * Select 'CSV'
+      * Download resulting CSV file for analysis
+      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+
+     # Google Cloud Project IAM Policies
+
+      * Execute 'acls-in-yaml --kind={{.Kind}} --project={{.Project}}'
+
+     # Google Workspace User Audit
+
+      * Open https://admin.google.com/ac/reporting/report/user/accounts
+      * Click Download icon
+      * Select All Columns
+      * Click CSV
+      * Download resulting CSV file for analysis
+      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+
+     # Google Workspace Users
+
+      * Open https://admin.google.com/ac/users
+      * Click Download users
+      * Select 'All user info Columns'
+      * Select 'Comma-separated values (.csv)'
+      * Download resulting CSV file for analysis
+      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+
+     # Kolide Users
+
+      * Open https://k2.kolide.com/3361/settings/admin/users
+      * Click CSV
+      * Download resulting CSV file for analysis
+      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+
+     # 1Password Team Members
+
+      * To be documented
+      * Download resulting CSV file for analysis
+      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+
+     # Secureframe Personnel
+
+      * Open https://app.secureframe.com/personnel
+      * Deselect any active filters
+      * Click Export...
+      * Select 'Direct Download'
+      * Download resulting CSV file for analysis
+      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+
+     # Slack Members
+
+      * Open Slack
+      * Click <org name>▼
+      * Select 'Settings & Administration'
+      * Select 'Manage Members'
+      * Select 'Export Member List'
+      * Download resulting CSV file for analysis
+      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+
+     # Vercel Site Permissions
+
+      * Open https://vercel.com/
+      * Select your company/team
+      * Click 'Settings'
+      * Click 'Members'
+      * Save this page (Complete)
+      * Collect resulting .html file for analysis (the other files are not necessary)
+      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+
+     # Webflow Site Permissions
+
+      * Open https://webflow.com/dashboard/sites/<site>/members
+      * Save this page (Complete)
+      * Collect resulting .html file for analysis (the other files are not necessary)
+      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+
+  -out-dir string
+     output YAML files to this directory
+  -project string
+     specific project to process within the kind
+  -serve
+     Enable server mode (web UI)
 ```
 
 ## FAQ
