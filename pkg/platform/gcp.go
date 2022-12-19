@@ -131,7 +131,7 @@ func (p *GoogleCloudProjectIAM) Description() ProcessorDescription {
 		Kind: "gcp-project-iam",
 		Name: "Google Cloud Project IAM Policies",
 		Steps: []string{
-			"Execute 'acls-in-yaml --gcloud-iam-projects=<project>'",
+			"Execute 'acls-in-yaml --kind=gcp --project=<project>'",
 		},
 	}
 }
@@ -179,7 +179,7 @@ func (p *GoogleCloudProjectIAM) Process(c Config) (*Artifact, error) {
 
 	groups := map[string]*Group{}
 
-	identityProject := c.IdentityReferenceProject
+	identityProject := c.GCPIdentityProject
 	if identityProject == "" {
 		identityProject = c.Project
 	}

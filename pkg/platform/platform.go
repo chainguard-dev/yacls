@@ -98,9 +98,14 @@ func NewSource(path string) (*Source, error) {
 
 // NewSourceFromConfig begins processing a source file, returning a source struct.
 func NewSourceFromConfig(c Config, p Processor) (*Source, error) {
-	content, err := io.ReadAll(c.Reader)
-	if err != nil {
-		return nil, fmt.Errorf("readall: %w", err)
+	var content []byte
+	var err error
+
+	if c.Reader != nil {
+		content, err = io.ReadAll(c.Reader)
+		if err != nil {
+			return nil, fmt.Errorf("readall: %w", err)
+		}
 	}
 
 	var mtime time.Time
@@ -218,11 +223,11 @@ type ProcessorDescription struct {
 }
 
 type Config struct {
-	Path                     string
-	Reader                   io.Reader
-	Project                  string
-	Kind                     string
-	IdentityReferenceProject string
+	Path               string
+	Reader             io.Reader
+	Project            string
+	Kind               string
+	GCPIdentityProject string
 
 	GCPMemberCache GCPMemberCache
 }
@@ -244,7 +249,7 @@ func New(kind string) (Processor, error) {
 func Available() []Processor {
 	return []Processor{
 		&GhostStaff{},
-		//	&GoogleCloudProjectIAM{},
+		&GoogleCloudProjectIAM{},
 		&GoogleWorkspaceUserAudit{},
 		&GoogleWorkspaceUsers{},
 		&GithubOrgMembers{},
