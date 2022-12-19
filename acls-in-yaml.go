@@ -17,20 +17,24 @@ import (
 	"k8s.io/klog/v2"
 )
 
-func steps(s []string) string {
-	// omit the last step if it mentions acls-in-yaml
-	if strings.Contains(s[len(s)-1], "acls-in-yaml") {
-		s = s[0 : len(s)-1]
+func kindHelp() string {
+	lines := []string{"\nDetailed steps for each kind:\n"}
+	for _, k := range platform.Available() {
+		d := k.Description()
+		lines = append(lines, fmt.Sprintf("# %s\n", d.Name))
+		for _, s := range d.Steps {
+			lines = append(lines, fmt.Sprintf(" * %s", s))
+		}
+		lines = append(lines, "")
 	}
-
-	return fmt.Sprintf("Steps:\n  * %s", strings.Join(s, "\n  * "))
+	return strings.Join(lines, "\n")
 }
 
 var (
 	inputFlag              = flag.String("input", "", "path to input file")
 	projectFlag            = flag.String("project", "", "specific project to process within the kind")
 	gcpIdentityProjectFlag = flag.String("gcp-identity-project", "", "project to use for GCP Cloud Identity lookups")
-	kindFlag               = flag.String("kind", "", fmt.Sprintf("kind of input to process. Valid values: \n  * %s", strings.Join(platform.AvailableKinds(), "\n  * ")))
+	kindFlag               = flag.String("kind", "", fmt.Sprintf("kind of input to process. valid values: \n  * %s\n%s", strings.Join(platform.AvailableKinds(), "\n  * "), kindHelp()))
 	serveFlag              = flag.Bool("serve", false, "Enable server mode (web UI)")
 	outDirFlag             = flag.String("out-dir", "", "output YAML files to this directory")
 )
