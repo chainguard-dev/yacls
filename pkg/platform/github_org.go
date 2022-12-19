@@ -19,7 +19,7 @@ func (p *GithubOrgMembers) Description() ProcessorDescription {
 			"Click Export",
 			"Select 'CSV'",
 			"Download resulting CSV file for analysis",
-			"Execute 'acls-in-yaml --github-org-members-csv=<path>'",
+			"Execute 'acls-in-yaml --github-org-members-csv={{.Path}}'",
 		},
 	}
 }

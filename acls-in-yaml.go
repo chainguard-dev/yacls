@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -26,11 +27,12 @@ func steps(s []string) string {
 }
 
 var (
-	inputFlag   = flag.String("input", "", "path to input file")
-	projectFlag = flag.String("project", "", "specific project to process within the kind")
-	kindFlag    = flag.String("kind", "", fmt.Sprintf("kind of input to process. Valid values: \n  * %s", strings.Join(platform.AvailableKinds(), "\n  * ")))
-	serveFlag   = flag.Bool("serve", false, "Enable server mode (web UI)")
-	outDirFlag  = flag.String("out-dir", "", "output YAML files to this directory")
+	inputFlag              = flag.String("input", "", "path to input file")
+	projectFlag            = flag.String("project", "", "specific project to process within the kind")
+	gcpIdentityProjectFlag = flag.String("gcp-identity-project", "", "project to use for GCP Cloud Identity lookups")
+	kindFlag               = flag.String("kind", "", fmt.Sprintf("kind of input to process. Valid values: \n  * %s", strings.Join(platform.AvailableKinds(), "\n  * ")))
+	serveFlag              = flag.Bool("serve", false, "Enable server mode (web UI)")
+	outDirFlag             = flag.String("out-dir", "", "output YAML files to this directory")
 )
 
 func main() {
@@ -38,7 +40,7 @@ func main() {
 	// klog.InitFlags(nil)
 	flag.Parse()
 
-	if *serveFlag {
+	if *serveFlag || os.Getenv("SERVE_MODE") == "1" {
 		s := server.New()
 		if err := s.Serve(); err != nil {
 			log.Fatalf("serve failed: %v", err)
@@ -51,19 +53,23 @@ func main() {
 		klog.Fatalf("unable to create %q platform: %v", *kindFlag, err)
 	}
 
-	f, err := os.Open(*inputFlag)
-	if err != nil {
-		klog.Fatalf("unable to open: %v", err)
+	var f io.ReadCloser
+	if *inputFlag != "" {
+		f, err = os.Open(*inputFlag)
+		if err != nil {
+			klog.Fatalf("unable to open: %v", err)
+		}
+		defer f.Close()
 	}
-	defer f.Close()
 
 	gcpMemberCache := platform.NewGCPMemberCache()
 
 	a, err := p.Process(platform.Config{
-		Path:           *inputFlag,
-		Reader:         f,
-		Project:        *projectFlag,
-		GCPMemberCache: gcpMemberCache,
+		Path:               *inputFlag,
+		Reader:             f,
+		Project:            *projectFlag,
+		GCPIdentityProject: *gcpIdentityProjectFlag,
+		GCPMemberCache:     gcpMemberCache,
 	})
 	if err != nil {
 		klog.Fatalf("process failed: %v", err)
