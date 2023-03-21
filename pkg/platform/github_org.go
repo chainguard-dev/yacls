@@ -12,7 +12,7 @@ type GithubOrgMembers struct{}
 
 func (p *GithubOrgMembers) Description() ProcessorDescription {
 	return ProcessorDescription{
-		Kind: "github-org",
+		Kind: "github",
 		Name: "Github Organization Members",
 		Steps: []string{
 			"Open https://github.com/orgs/<org>/people",
@@ -25,9 +25,10 @@ func (p *GithubOrgMembers) Description() ProcessorDescription {
 }
 
 type githubMemberRecord struct {
-	Login string `csv:"login"`
-	Name  string `csv:"name"`
-	Role  string `csv:"role"`
+	Login      string `csv:"login"`
+	Name       string `csv:"name"`
+	Role       string `csv:"role"`
+	SAMLNameID string `csv:"saml_name_id"`
 }
 
 func (p *GithubOrgMembers) Process(c Config) (*Artifact, error) {
@@ -43,10 +44,18 @@ func (p *GithubOrgMembers) Process(c Config) (*Artifact, error) {
 	}
 
 	for _, r := range records {
+		role := r.Role
+
+		// Keep the output smaller by hiding the default case
+		if strings.ToLower(r.Role) == "member" {
+			role = ""
+		}
+
 		u := User{
 			Account: r.Login,
 			Name:    strings.TrimSpace(r.Name),
-			Role:    r.Role,
+			Role:    role,
+			SSO:     r.SAMLNameID,
 		}
 
 		if strings.HasSuffix(u.Name, "Bot") || strings.HasSuffix(u.Account, "Bot") {
