@@ -34,6 +34,7 @@ type User struct {
 	Permissions []string     `yaml:",omitempty"`
 	Status      string       `yaml:",omitempty"`
 	Groups      []Membership `yaml:",omitempty"`
+	SSO         string       `yaml:"sso,omitempty"`
 }
 
 type Group struct {
