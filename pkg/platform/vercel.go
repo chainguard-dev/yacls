@@ -6,8 +6,6 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 // VercelMembers parses the HTML output of the Vercel Members page.
@@ -27,6 +25,14 @@ func (p *VercelMembers) Description() ProcessorDescription {
 			"Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'",
 		},
 	}
+}
+
+var vercelRoles = map[string]bool{
+	"owner":     true,
+	"member":    true,
+	"developer": true,
+	"billing":   true,
+	"viewer":    true,
 }
 
 func (p *VercelMembers) Process(c Config) (*Artifact, error) {
@@ -58,12 +64,19 @@ func (p *VercelMembers) Process(c Config) (*Artifact, error) {
 		if len(roles) == 0 {
 			vals := []string{}
 
-			s.Find("p").Each(func(i int, p *goquery.Selection) {
-				vals = append(vals, p.Text())
+			s.Find("span").Each(func(i int, p *goquery.Selection) {
+				if vercelRoles[strings.ToLower(p.Text())] {
+					vals = append(vals, strings.ToLower(p.Text()))
+				}
 			})
 
-			title := cases.Title(language.English).String(vals[len(vals)-1])
-			roles = append(roles, title)
+			s.Find("p").Each(func(i int, p *goquery.Selection) {
+				if vercelRoles[strings.ToLower(p.Text())] {
+					vals = append(vals, strings.ToLower(p.Text()))
+				}
+			})
+
+			roles = append(roles, vals[0])
 		}
 
 		role := roles[0]
