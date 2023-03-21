@@ -1,5 +1,9 @@
 # acls-in-yaml
 
+[![Go Report](https://goreportcard.com/badge/github.com/chainguard-dev/acls-in-yaml)](https://goreportcard.com/badge/github.com/chainguard-dev/acls-in-yaml)
+[![Latest Release](https://img.shields.io/github/v/release/chainguard-dev/acls-in-yaml?include_prereleases)](https://github.com/chainguard-dev/acls-in-yaml/releases/latest)
+[![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
+
 Collect user ACLs from SaaS platforms and export them to YAML files optimized for readability.
 
 ![acls-in-yaml](images/logo-small.png?raw=true "acls-in-yaml logo")
