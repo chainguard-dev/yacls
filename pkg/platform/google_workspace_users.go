@@ -74,6 +74,11 @@ func (p *GoogleWorkspaceUsers) Process(c Config) (*Artifact, error) {
 			u.TwoFactorDisabled = true
 		}
 
+		if strings.Contains(u.Account, "service-account") || strings.Contains(strings.ToLower(u.Name), "service account") {
+			a.Bots = append(a.Bots, u)
+			continue
+		}
+
 		a.Users = append(a.Users, u)
 	}
 
