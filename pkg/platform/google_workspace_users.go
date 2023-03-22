@@ -2,6 +2,7 @@ package platform
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/gocarina/gocsv"
@@ -28,6 +29,7 @@ func (p *GoogleWorkspaceUsers) Description() ProcessorDescription {
 type googleWorkspaceUserRecord struct {
 	EmailAddress      string `csv:"Email Address [Required]"`
 	Status            string `csv:"Status [READ ONLY]"`
+	OrgUnit           string `csv:"Org Unit Path [Required]"`
 	FirstName         string `csv:"First Name [Required]"`
 	LastName          string `csv:"Last Name [Required]"`
 	LastSignIn        string `csv:"Last Sign In [READ ONLY]"`
@@ -46,17 +48,38 @@ func (p *GoogleWorkspaceUsers) Process(c Config) (*Artifact, error) {
 		return nil, fmt.Errorf("unmarshal: %w", err)
 	}
 
+	orgs := map[string]*Group{}
+
 	for _, r := range records {
 		username, _, _ := strings.Cut(r.EmailAddress, "@")
+		org := strings.TrimPrefix(r.OrgUnit, "/")
 		u := User{
 			Account: username,
 			Name:    strings.TrimSpace(r.FirstName) + " " + strings.TrimSpace(r.LastName),
+			Org:     org,
 		}
 
-		if r.Status != "Active" {
+		if org != "" {
+			if orgs[org] == nil {
+				orgs[org] = &Group{Name: org}
+			}
+			orgs[org].Members = append(orgs[org].Members, username)
+		}
+
+		if strings.ToLower(r.Status) != "active" {
 			u.Status = r.Status
 		}
+
+		if strings.ToLower(r.TwoFactorEnforced) != "true" {
+			u.TwoFactorDisabled = true
+		}
+
 		a.Users = append(a.Users, u)
+	}
+
+	for _, o := range orgs {
+		sort.Strings(o.Members)
+		a.Orgs = append(a.Orgs, *o)
 	}
 
 	return a, nil

@@ -21,6 +21,8 @@ type Artifact struct {
 	Bots            []User              `yaml:",omitempty"`
 	GroupCount      int                 `yaml:"group_count,omitempty"`
 	Groups          []Group             `yaml:"groups,omitempty"`
+	OrgCount        int                 `yaml:"org_count,omitempty"`
+	Orgs            []Group             `yaml:"orgs,omitempty"`
 	RoleCount       int                 `yaml:"role_count,omitempty"`
 	Roles           map[string][]string `yaml:"roles,omitempty"`
 	PermissionCount int                 `yaml:"permission_count,omitempty"`
@@ -28,13 +30,15 @@ type Artifact struct {
 }
 
 type User struct {
-	Account     string
-	Name        string       `yaml:",omitempty"`
-	Role        string       `yaml:",omitempty"`
-	Permissions []string     `yaml:",omitempty"`
-	Status      string       `yaml:",omitempty"`
-	Groups      []Membership `yaml:",omitempty"`
-	SSO         string       `yaml:"sso,omitempty"`
+	Account           string
+	Name              string       `yaml:",omitempty"`
+	Role              string       `yaml:",omitempty"`
+	Permissions       []string     `yaml:",omitempty"`
+	Status            string       `yaml:",omitempty"`
+	Groups            []Membership `yaml:",omitempty"`
+	Org               string       `yaml:",omitempty"`
+	TwoFactorDisabled bool         `yaml:"two_factor_disabled,omitempty"`
+	SSO               string       `yaml:"sso,omitempty"`
 }
 
 type Group struct {
@@ -162,6 +166,7 @@ func FinalizeArtifact(a *Artifact) {
 	a.PermissionCount = len(a.Permissions)
 	a.RoleCount = len(a.Roles)
 	a.GroupCount = len(a.Groups)
+	a.OrgCount = len(a.Orgs)
 }
 
 // updates {{.Path}} or {{.Project}} in a list of steps.
