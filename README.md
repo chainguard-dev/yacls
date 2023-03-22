@@ -17,7 +17,8 @@ and is carefully tuned to make policy drift easy to notice.
 ## Supported Data Sources
 
 * 1Password (CSV)
-* Ghost Blog Staff (HTML)
+* Auth0 (HTML)
+* Ghost Blog (HTML)
 * Github Org Members (CSV)
 * Google Cloud Platform (gcloud)
 * Google Workspace (CSV)
