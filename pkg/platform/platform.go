@@ -227,6 +227,7 @@ func New(kind string) (Processor, error) {
 func Available() []Processor {
 	// Alphabetical
 	return []Processor{
+		&Auth0Members{},
 		&GhostStaff{},
 		&GithubOrgMembers{},
 		&GoogleCloudProjectIAM{},
