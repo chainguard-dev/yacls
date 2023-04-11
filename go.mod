@@ -14,3 +14,5 @@ require (
 	github.com/go-logr/logr v1.2.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
 )
+
+replace github.com/chainguard-dev/acls-in-yaml => github.com/chainguard-dev/yacls v1.0.0
