@@ -4,7 +4,7 @@
 [![Latest Release](https://img.shields.io/github/v/release/chainguard-dev/yacls?include_prereleases)](https://github.com/chainguard-dev/yacls/releases/latest)
 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
-Collect user ACLs from SaaS platforms and export them to YAML files optimized for readability.
+Collect user ACLs from SaaS platforms and export them to YAML files - optimized for diffs and readability by engineers or auditors.
 
 ![yacls](images/logo-small.png?raw=true "yacls logo")
 
