@@ -131,7 +131,7 @@ func (p *GoogleCloudProjectIAM) Description() ProcessorDescription {
 		Kind: "gcp",
 		Name: "Google Cloud Project IAM Policies",
 		Steps: []string{
-			"Execute 'acls-in-yaml --kind={{.Kind}} --project={{.Project}}'",
+			"Execute 'yacls --kind={{.Kind}} --project={{.Project}}'",
 		},
 	}
 }

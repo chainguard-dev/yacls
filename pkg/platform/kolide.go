@@ -18,7 +18,7 @@ func (p *KolideUsers) Description() ProcessorDescription {
 			"Open https://k2.kolide.com/3361/settings/admin/users",
 			"Click CSV",
 			"Download resulting CSV file for analysis",
-			"Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'",
+			"Execute 'yacls --kind={{.Kind}} --input={{.Path}}'",
 		},
 	}
 }

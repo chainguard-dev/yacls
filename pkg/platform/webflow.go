@@ -20,7 +20,7 @@ func (p *WebflowMembers) Description() ProcessorDescription {
 			"Open https://webflow.com/dashboard/sites/<site>/members",
 			"Save this page (Complete)",
 			"Collect resulting .html file for analysis (the other files are not necessary)",
-			"Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'",
+			"Execute 'yacls --kind={{.Kind}} --input={{.Path}}'",
 		},
 	}
 }

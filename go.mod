@@ -1,4 +1,4 @@
-module github.com/chainguard-dev/acls-in-yaml
+module github.com/chainguard-dev/yacls
 
 go 1.19
 

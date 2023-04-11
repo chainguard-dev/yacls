@@ -1,14 +1,14 @@
-# acls-in-yaml
+# yacls
 
-[![Go Report](https://goreportcard.com/badge/github.com/chainguard-dev/acls-in-yaml)](https://goreportcard.com/badge/github.com/chainguard-dev/acls-in-yaml)
-[![Latest Release](https://img.shields.io/github/v/release/chainguard-dev/acls-in-yaml?include_prereleases)](https://github.com/chainguard-dev/acls-in-yaml/releases/latest)
+[![Go Report](https://goreportcard.com/badge/github.com/chainguard-dev/yacls)](https://goreportcard.com/badge/github.com/chainguard-dev/yacls)
+[![Latest Release](https://img.shields.io/github/v/release/chainguard-dev/yacls?include_prereleases)](https://github.com/chainguard-dev/yacls/releases/latest)
 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
 Collect user ACLs from SaaS platforms and export them to YAML files optimized for readability.
 
-![acls-in-yaml](images/logo-small.png?raw=true "acls-in-yaml logo")
+![yacls](images/logo-small.png?raw=true "yacls logo")
 
-acls-in-yaml is designed to make regular access control audits easy by
+yacls is designed to make regular access control audits easy by
 offering a familiar standardized format (YAML) for easy reviews and diffing.
 
 The output is optimized for being reviewed by humans within a Github PR periodically
@@ -35,12 +35,12 @@ and is carefully tuned to make policy drift easy to notice.
 ## Installation
 
 ```shell
-go install github.com/chainguard-dev/acls-in-yaml@latest
+go install github.com/chainguard-dev/yacls@latest
 ```
 
 ## Sample Output
 
-This is the output of `acls-in-yaml --vercel-html=</path/to/members.html>`:
+This is the output of `yacls --vercel-html=</path/to/members.html>`:
 
 ```yaml
 metadata:
@@ -56,7 +56,7 @@ metadata:
         - Click 'Members'
         - Save this page (Complete)
         - Collect resulting .html file for analysis (the other files are not necessary)
-        - Execute 'acls-in-yaml --vercel-members-html=Members - Team Settings – Dashboard – Vercel.html'
+        - Execute 'yacls --vercel-members-html=Members - Team Settings – Dashboard – Vercel.html'
 user_count: 7
 users:
     - account: john@chainguard.dev
@@ -81,7 +81,7 @@ roles:
 Turn a pile of CSV and HTML pages into a directory full of easily auditable YAML files.
 
 ```shell
-acls-in-yaml \
+yacls \
   --google-users-csv=User_Download.csv \
   --google-audit-csv=users_logs.csv \
   --github-org-csv=export-github.csv \
@@ -94,7 +94,7 @@ You can also pass in a single input file at a time.
 
 ## Usage
 
-Flags for `acls-in-yaml`:
+Flags for `yacls`:
 
 ```yaml
   -gcp-identity-project string
@@ -125,7 +125,7 @@ Flags for `acls-in-yaml`:
       * Zoom out so that all users are visible on one screen
       * Save this page (Complete)
       * Collect resulting .html file for analysis (the other files are not necessary)
-      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+      * Execute 'yacls --kind={{.Kind}} --input={{.Path}}'
 
      # Github Organization Members
 
@@ -133,11 +133,11 @@ Flags for `acls-in-yaml`:
       * Click Export
       * Select 'CSV'
       * Download resulting CSV file for analysis
-      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+      * Execute 'yacls --kind={{.Kind}} --input={{.Path}}'
 
      # Google Cloud Project IAM Policies
 
-      * Execute 'acls-in-yaml --kind={{.Kind}} --project={{.Project}}'
+      * Execute 'yacls --kind={{.Kind}} --project={{.Project}}'
 
      # Google Workspace User Audit
 
@@ -146,7 +146,7 @@ Flags for `acls-in-yaml`:
       * Select All Columns
       * Click CSV
       * Download resulting CSV file for analysis
-      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+      * Execute 'yacls --kind={{.Kind}} --input={{.Path}}'
 
      # Google Workspace Users
 
@@ -155,20 +155,20 @@ Flags for `acls-in-yaml`:
       * Select 'All user info Columns'
       * Select 'Comma-separated values (.csv)'
       * Download resulting CSV file for analysis
-      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+      * Execute 'yacls --kind={{.Kind}} --input={{.Path}}'
 
      # Kolide Users
 
       * Open https://k2.kolide.com/3361/settings/admin/users
       * Click CSV
       * Download resulting CSV file for analysis
-      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+      * Execute 'yacls --kind={{.Kind}} --input={{.Path}}'
 
      # 1Password Team Members
 
       * To be documented
       * Download resulting CSV file for analysis
-      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+      * Execute 'yacls --kind={{.Kind}} --input={{.Path}}'
 
      # Secureframe Personnel
 
@@ -177,7 +177,7 @@ Flags for `acls-in-yaml`:
       * Click Export...
       * Select 'Direct Download'
       * Download resulting CSV file for analysis
-      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+      * Execute 'yacls --kind={{.Kind}} --input={{.Path}}'
 
      # Slack Members
 
@@ -187,7 +187,7 @@ Flags for `acls-in-yaml`:
       * Select 'Manage Members'
       * Select 'Export Member List'
       * Download resulting CSV file for analysis
-      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+      * Execute 'yacls --kind={{.Kind}} --input={{.Path}}'
 
      # Vercel Site Permissions
 
@@ -197,14 +197,14 @@ Flags for `acls-in-yaml`:
       * Click 'Members'
       * Save this page (Complete)
       * Collect resulting .html file for analysis (the other files are not necessary)
-      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+      * Execute 'yacls --kind={{.Kind}} --input={{.Path}}'
 
      # Webflow Site Permissions
 
       * Open https://webflow.com/dashboard/sites/<site>/members
       * Save this page (Complete)
       * Collect resulting .html file for analysis (the other files are not necessary)
-      * Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'
+      * Execute 'yacls --kind={{.Kind}} --input={{.Path}}'
 
   -out-dir string
      output YAML files to this directory

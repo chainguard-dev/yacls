@@ -20,7 +20,7 @@ func (p *SecureframePersonnel) Description() ProcessorDescription {
 			"Click Export...",
 			"Select 'Direct Download'",
 			"Download resulting CSV file for analysis",
-			"Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'",
+			"Execute 'yacls --kind={{.Kind}} --input={{.Path}}'",
 		},
 	}
 }

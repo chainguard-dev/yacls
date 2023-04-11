@@ -21,7 +21,7 @@ func (p *GoogleWorkspaceUsers) Description() ProcessorDescription {
 			"Select 'All user info Columns'",
 			"Select 'Comma-separated values (.csv)'",
 			"Download resulting CSV file for analysis",
-			"Execute 'acls-in-yaml --kind={{.Kind}} --input={{.Path}}'",
+			"Execute 'yacls --kind={{.Kind}} --input={{.Path}}'",
 		},
 	}
 }
