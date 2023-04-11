@@ -52,6 +52,10 @@ func main() {
 		os.Exit(0)
 	}
 
+	if *kindFlag == "" {
+		klog.Fatalf("--kind is a required flag, see --help.")
+	}
+
 	p, err := platform.New(*kindFlag)
 	if err != nil {
 		klog.Fatalf("unable to create %q platform: %v", *kindFlag, err)
