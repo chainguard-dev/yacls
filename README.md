@@ -78,19 +78,25 @@ roles:
 
 ## Example command-line
 
-Turn a pile of CSV and HTML pages into a directory full of easily auditable YAML files.
+Create an audit YAML for a GCP project:
 
 ```shell
-yacls \
-  --google-users-csv=User_Download.csv \
-  --google-audit-csv=users_logs.csv \
-  --github-org-csv=export-github.csv \
-  --slack-csv=members.csv \
-  --kolide-csv=kolide.csv \
-  --out-dir=/path/to/github/repo
+yacls --kind=gcp --project=prod-env --out-dir=./out
 ```
 
-You can also pass in a single input file at a time.
+Create an audit YAML from a Vercel page:
+
+```shell
+yacls --input vercel.html --kind vercel
+```
+
+Turn a directory full of input files into a directory full of easily auditable YAML files:
+
+```shell
+yacls --input-dir=in/ --out-dir=out/
+```
+
+The input files should be named after the appropriate `kind`, so for instance, `ghost.csv` or `secureframe.html`.
 
 ## Usage
 
