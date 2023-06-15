@@ -54,7 +54,6 @@ func main() {
 	}
 
 	inputs := []string{}
-	var f io.ReadCloser
 	if *inputFlag != "" {
 		inputs = append(inputs, *inputFlag)
 	}
@@ -73,7 +72,11 @@ func main() {
 		}
 	}
 
-	if len(inputs) == 0 {
+	if *kindFlag == "gcp" {
+		inputs = append(inputs, "")
+	}
+
+	if len(inputs) == 0 && *kindFlag == "" {
 		log.Fatalf("found no inputs to work with")
 	}
 
@@ -91,16 +94,19 @@ func main() {
 			}
 		}
 
+		var f io.ReadCloser
 		p, err := platform.New(kind)
 		if err != nil {
 			klog.Fatalf("unable to create %q platform: %v", *kindFlag, err)
 		}
 
-		f, err = os.Open(i)
-		if err != nil {
-			klog.Fatalf("unable to open: %v", err)
+		if i != "" {
+			f, err = os.Open(i)
+			if err != nil {
+				klog.Fatalf("unable to open: %v", err)
+			}
+			defer f.Close()
 		}
-		defer f.Close()
 
 		a, err := p.Process(platform.Config{
 			Path:               i,
