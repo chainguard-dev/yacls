@@ -8,7 +8,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/chainguard-dev/yacls/pkg/platform"
+	"github.com/chainguard-dev/yacls/v2/pkg/platform"
 	"gopkg.in/yaml.v3"
 	"k8s.io/klog/v2"
 )

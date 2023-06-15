@@ -1,4 +1,4 @@
-module github.com/chainguard-dev/yacls
+module github.com/chainguard-dev/yacls/v2
 
 go 1.20
 
