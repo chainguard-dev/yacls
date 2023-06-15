@@ -25,6 +25,7 @@ func (p *GithubOrgMembers) Description() ProcessorDescription {
 			"Download resulting CSV file for analysis",
 			"Execute 'yacls --kind={{.Kind}} --input={{.Path}}'",
 		},
+		MatchingFilename: regexp.MustCompile(`^export-.*-\d+.csv$`),
 	}
 }
 
@@ -46,7 +47,7 @@ func (p *GithubOrgMembers) Process(c Config) (*Artifact, error) {
 	}
 
 	if org == "" {
-		return nil, fmt.Errorf("Unable to detect organization, please pass --project=<github organization>")
+		return nil, fmt.Errorf("unable to detect organization from %q, please pass --project=<github organization>", c.Path)
 	}
 
 	src, err := NewSourceFromConfig(c, p)

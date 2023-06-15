@@ -2,6 +2,7 @@ package platform
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -23,6 +24,7 @@ func (p *GoogleWorkspaceUsers) Description() ProcessorDescription {
 			"Download resulting CSV file for analysis",
 			"Execute 'yacls --kind={{.Kind}} --input={{.Path}}'",
 		},
+		MatchingFilename: regexp.MustCompile(`User_Download_\d+_\d+.csv$`),
 	}
 }
 

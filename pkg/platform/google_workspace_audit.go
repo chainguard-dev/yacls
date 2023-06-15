@@ -36,6 +36,7 @@ func (p *GoogleWorkspaceUserAudit) Description() ProcessorDescription {
 			"Download resulting CSV file for analysis",
 			"Execute 'yacls --kind={{.Kind}} --input={{.Path}}'",
 		},
+		MatchingFilename: regexp.MustCompile(`users_logs_\d+.csv$`),
 	}
 }
 

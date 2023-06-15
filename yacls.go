@@ -36,6 +36,7 @@ var (
 	gcpIdentityProjectFlag = flag.String("gcp-identity-project", "", "project to use for GCP Cloud Identity lookups")
 	kindFlag               = flag.String("kind", "", fmt.Sprintf("kind of input to process. valid values: \n  * %s\n%s", strings.Join(platform.AvailableKinds(), "\n  * "), kindHelp()))
 	serveFlag              = flag.Bool("serve", false, "Enable server mode (web UI)")
+	inDirFlag              = flag.String("in-dir", "", "process all input files found directly within this directory, guessing kinds")
 	outDirFlag             = flag.String("out-dir", "", "output YAML files to this directory")
 )
 
@@ -52,39 +53,69 @@ func main() {
 		os.Exit(0)
 	}
 
-	if *kindFlag == "" {
-		klog.Fatalf("--kind is a required flag, see --help.")
-	}
-
-	p, err := platform.New(*kindFlag)
-	if err != nil {
-		klog.Fatalf("unable to create %q platform: %v", *kindFlag, err)
-	}
-
+	inputs := []string{}
 	var f io.ReadCloser
 	if *inputFlag != "" {
-		f, err = os.Open(*inputFlag)
+		inputs = append(inputs, *inputFlag)
+	}
+	if *inDirFlag != "" {
+		files, err := os.ReadDir(*inDirFlag)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, file := range files {
+			if file.IsDir() {
+				continue
+			}
+			log.Printf("found input file: %s", file.Name())
+			inputs = append(inputs, filepath.Join(*inDirFlag, file.Name()))
+		}
+	}
+
+	if len(inputs) == 0 {
+		log.Fatalf("found no inputs to work with")
+	}
+
+	gcpMemberCache := platform.NewGCPMemberCache()
+	artifacts := []*platform.Artifact{}
+	var err error
+
+	for _, i := range inputs {
+		kind := *kindFlag
+		if kind == "" {
+			kind, err = platform.SuggestKind(i)
+			if err != nil {
+				log.Fatalf("suggest kind: %v", err)
+				continue
+			}
+		}
+
+		p, err := platform.New(kind)
+		if err != nil {
+			klog.Fatalf("unable to create %q platform: %v", *kindFlag, err)
+		}
+
+		f, err = os.Open(i)
 		if err != nil {
 			klog.Fatalf("unable to open: %v", err)
 		}
 		defer f.Close()
+
+		a, err := p.Process(platform.Config{
+			Path:               i,
+			Reader:             f,
+			Project:            *projectFlag,
+			Kind:               kind,
+			GCPIdentityProject: *gcpIdentityProjectFlag,
+			GCPMemberCache:     gcpMemberCache,
+		})
+		if err != nil {
+			klog.Fatalf("process failed: %v", err)
+		}
+
+		artifacts = append(artifacts, a)
 	}
-
-	gcpMemberCache := platform.NewGCPMemberCache()
-
-	a, err := p.Process(platform.Config{
-		Path:               *inputFlag,
-		Reader:             f,
-		Project:            *projectFlag,
-		Kind:               *kindFlag,
-		GCPIdentityProject: *gcpIdentityProjectFlag,
-		GCPMemberCache:     gcpMemberCache,
-	})
-	if err != nil {
-		klog.Fatalf("process failed: %v", err)
-	}
-
-	artifacts := []*platform.Artifact{a}
 
 	for _, a := range artifacts {
 		platform.FinalizeArtifact(a)

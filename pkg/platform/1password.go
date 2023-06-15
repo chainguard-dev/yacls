@@ -2,6 +2,7 @@ package platform
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/gocarina/gocsv"
@@ -26,6 +27,7 @@ func (p *OnePasswordTeam) Description() ProcessorDescription {
 
 			"Execute 'yacls --kind={{.Kind}} --input={{.Path}}'",
 		},
+		MatchingFilename: regexp.MustCompile(`^.* Team Report \d+-\d+-\d+.csv$`),
 	}
 }
 

@@ -7,7 +7,10 @@ import (
 	"io"
 	"os"
 	"os/user"
+	"path/filepath"
+	"regexp"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -199,10 +202,11 @@ func renderSteps(steps []string, c Config) []string {
 }
 
 type ProcessorDescription struct {
-	Kind           string
-	Name           string
-	Steps          []string
-	OptionalFields []string
+	Kind             string
+	Name             string
+	Steps            []string
+	OptionalFields   []string
+	MatchingFilename *regexp.Regexp
 }
 
 type Config struct {
@@ -227,6 +231,19 @@ func New(kind string) (Processor, error) {
 		}
 	}
 	return nil, fmt.Errorf("unknown kind: %q", kind)
+}
+
+func SuggestKind(path string) (string, error) {
+	base := filepath.Base(path)
+	for _, p := range Available() {
+		if p.Description().MatchingFilename != nil && p.Description().MatchingFilename.MatchString(base) {
+			return p.Description().Kind, nil
+		}
+		if strings.HasPrefix(base, p.Description().Kind) {
+			return p.Description().Kind, nil
+		}
+	}
+	return "", fmt.Errorf("unable to find kind for %q", path)
 }
 
 func Available() []Processor {
