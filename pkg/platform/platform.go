@@ -18,10 +18,11 @@ var SourceDateFormat = "2006-01-02"
 
 type Artifact struct {
 	Metadata        *Source
-	UserCount       int `yaml:"user_count"`
-	Users           []User
+	UserCount       int                 `yaml:"user_count,omitempty"`
+	Users           []User              `yaml:"users,omitempty"`
+	Firewall        Firewall            `yaml:"firewall,omitempty"`
 	BotCount        int                 `yaml:"bot_count,omitempty"`
-	Bots            []User              `yaml:",omitempty"`
+	Bots            []User              `yaml:"bots,omitempty"`
 	GroupCount      int                 `yaml:"group_count,omitempty"`
 	Groups          []Group             `yaml:"groups,omitempty"`
 	OrgCount        int                 `yaml:"org_count,omitempty"`
@@ -30,6 +31,28 @@ type Artifact struct {
 	Roles           map[string][]string `yaml:"roles,omitempty"`
 	PermissionCount int                 `yaml:"permission_count,omitempty"`
 	Permissions     map[string][]string `yaml:"permissions,omitempty"`
+}
+
+type Firewall struct {
+	Ingress []FirewallRule `yaml:"ingress"`
+	Egress  []FirewallRule `yaml:"egress"`
+}
+
+type SourceOrTarget struct {
+	Protocol string   `yaml:"protocol"`
+	Ports    []string `yaml:"ports,omitempty"`
+}
+
+// FirewallRule
+type FirewallRule struct {
+	Allow        []SourceOrTarget `yaml:"allow"`
+	Description  string           `yaml:"description,omitempty"`
+	Direction    string           `yaml:"-"`
+	Logging      bool             `yaml:"logging,omitempty"`
+	Network      string           `yaml:"network,omitempty"`
+	Priority     int              `yaml:"priority,omitempty"`
+	SourceRanges []string         `yaml:"sources,omitempty"`
+	Targets      []string         `yaml:"targets,omitempty"`
 }
 
 type User struct {
@@ -207,6 +230,7 @@ type ProcessorDescription struct {
 	Steps            []string
 	OptionalFields   []string
 	MatchingFilename *regexp.Regexp
+	NoInputRequired  bool
 }
 
 type Config struct {
@@ -253,6 +277,7 @@ func Available() []Processor {
 		&GhostStaff{},
 		&GithubOrgMembers{},
 		&GoogleCloudProjectIAM{},
+		&GoogleCloudProjectFirewall{},
 		&GoogleWorkspaceUserAudit{},
 		&GoogleWorkspaceUsers{},
 		&KolideUsers{},

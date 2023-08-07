@@ -133,6 +133,7 @@ func (p *GoogleCloudProjectIAM) Description() ProcessorDescription {
 		Steps: []string{
 			"Execute 'yacls --kind={{.Kind}} --project={{.Project}}'",
 		},
+		NoInputRequired: true,
 	}
 }
 
