@@ -51,6 +51,7 @@ func (p *GoogleCloudProjectFirewall) Process(c Config) (*Artifact, error) {
 		return nil, fmt.Errorf("source: %w", err)
 	}
 	a := &Artifact{Metadata: src}
+	a.Metadata.ID = project
 
 	project := c.Project
 	cmd := exec.Command("gcloud", "compute", "firewall-rules", "list", "--project", project, "--format=json")
@@ -62,7 +63,7 @@ func (p *GoogleCloudProjectFirewall) Process(c Config) (*Artifact, error) {
 		return nil, fmt.Errorf("%s: %w", cmd, err)
 	}
 
-	klog.Infof("output: %s", stdout)
+	//klog.Infof("output: %s", stdout)
 
 	full := []gcloudFirewallFull{}
 	err = json.Unmarshal(stdout, &full)
