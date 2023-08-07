@@ -51,7 +51,7 @@ func (p *GoogleCloudProjectFirewall) Process(c Config) (*Artifact, error) {
 		return nil, fmt.Errorf("source: %w", err)
 	}
 	a := &Artifact{Metadata: src}
-	a.Metadata.ID = project
+	a.Metadata.ID = c.Project
 
 	project := c.Project
 	cmd := exec.Command("gcloud", "compute", "firewall-rules", "list", "--project", project, "--format=json")
