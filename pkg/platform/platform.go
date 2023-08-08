@@ -46,13 +46,13 @@ type FirewallRuleMeta struct {
 
 // FirewallRule
 type FirewallRule struct {
-	Allow      string `yaml:"allow,omitempty"`
-	Deny       string `yaml:"deny,omitempty"`
-	Direction  string `yaml:"-"`
-	Network    string `yaml:"net,omitempty"`
-	Sources    string `yaml:"sources,omitempty"`
-	SourceTags string `yaml:"source_tags,omitempty"`
-	TargetTags string `yaml:"target_tags,omitempty"`
+	Allow        string `yaml:"allow,omitempty"`
+	Deny         string `yaml:"deny,omitempty"`
+	Network      string `yaml:"net,omitempty"`
+	Sources      string `yaml:"sources,omitempty"`
+	Destinations string `yaml:"destinations,omitempty"`
+	SourceTags   string `yaml:"source_tags,omitempty"`
+	TargetTags   string `yaml:"target_tags,omitempty"`
 }
 
 type User struct {

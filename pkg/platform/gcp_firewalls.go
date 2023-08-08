@@ -26,13 +26,14 @@ type gcloudFirewallFull struct {
 	LogConfig         struct {
 		Enable bool `json:"enable"`
 	} `json:"logConfig"`
-	Name         string   `json:"name"`
-	Network      string   `json:"network"`
-	Priority     int      `json:"priority"`
-	SelfLink     string   `json:"selfLink"`
-	SourceRanges []string `json:"sourceRanges"`
-	SourceTags   []string `json:"sourceTags,omitempty"`
-	TargetTags   []string `json:"targetTags,omitempty"`
+	Name              string   `json:"name"`
+	Network           string   `json:"network"`
+	Priority          int      `json:"priority"`
+	SelfLink          string   `json:"selfLink"`
+	SourceRanges      []string `json:"sourceRanges"`
+	DestinationRanges []string `json:"destinationRanges"`
+	SourceTags        []string `json:"sourceTags,omitempty"`
+	TargetTags        []string `json:"targetTags,omitempty"`
 }
 
 // GoogleCloudProjectFirewall uses gcloud to generate a list of firewalls
@@ -96,12 +97,12 @@ func (p *GoogleCloudProjectFirewall) Process(c Config) (*Artifact, error) {
 			Logging:     r.LogConfig.Enable,
 			Priority:    r.Priority,
 			Rule: FirewallRule{
-				Direction:  r.Direction,
-				Sources:    strings.Join(r.SourceRanges, ","),
-				SourceTags: strings.Join(r.SourceTags, ","),
-				TargetTags: strings.Join(r.TargetTags, ","),
-				Allow:      gcloudTargetsString(r.Allowed),
-				Deny:       gcloudTargetsString(r.Denied),
+				Sources:      strings.Join(r.SourceRanges, ","),
+				Destinations: strings.Join(r.DestinationRanges, ","),
+				SourceTags:   strings.Join(r.SourceTags, ","),
+				TargetTags:   strings.Join(r.TargetTags, ","),
+				Allow:        gcloudTargetsString(r.Allowed),
+				Deny:         gcloudTargetsString(r.Denied),
 			},
 		}
 
@@ -119,6 +120,29 @@ func (p *GoogleCloudProjectFirewall) Process(c Config) (*Artifact, error) {
 			return nil, fmt.Errorf("unexpected direction: %q", r.Direction)
 		}
 	}
+
+	// https://cloud.google.com/firewall/docs/firewalls#default_firewall_rules
+	a.Ingress = append(a.Ingress, FirewallRuleMeta{
+		Name:        "gcp-ingress-fallback",
+		Description: "GCP Implied Ingress Fallback",
+		Logging:     false,
+		Priority:    65535,
+		Rule: FirewallRule{
+			Sources: "0.0.0.0/0",
+			Deny:    "all",
+		},
+	})
+
+	a.Egress = append(a.Egress, FirewallRuleMeta{
+		Name:        "gcp-egress-fallback",
+		Description: "GCP Implied Egress Fallback",
+		Logging:     false,
+		Priority:    65535,
+		Rule: FirewallRule{
+			Destinations: "0.0.0.0/0",
+			Allow:        "all",
+		},
+	})
 
 	//klog.Infof("full: %+v", full)
 	return a, err
