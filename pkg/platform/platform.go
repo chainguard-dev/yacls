@@ -17,10 +17,13 @@ import (
 var SourceDateFormat = "2006-01-02"
 
 type Artifact struct {
-	Metadata        *Source
-	UserCount       int                 `yaml:"user_count,omitempty"`
-	Users           []User              `yaml:"users,omitempty"`
-	Firewall        Firewall            `yaml:"firewall,omitempty"`
+	Metadata  *Source
+	UserCount int    `yaml:"user_count,omitempty"`
+	Users     []User `yaml:"users,omitempty"`
+
+	Ingress []FirewallRuleMeta `yaml:"ingress"`
+	Egress  []FirewallRuleMeta `yaml:"egress"`
+
 	BotCount        int                 `yaml:"bot_count,omitempty"`
 	Bots            []User              `yaml:"bots,omitempty"`
 	GroupCount      int                 `yaml:"group_count,omitempty"`
@@ -33,26 +36,23 @@ type Artifact struct {
 	Permissions     map[string][]string `yaml:"permissions,omitempty"`
 }
 
-type Firewall struct {
-	Ingress []FirewallRule `yaml:"ingress"`
-	Egress  []FirewallRule `yaml:"egress"`
-}
-
-type SourceOrTarget struct {
-	Protocol string   `yaml:"protocol"`
-	Ports    []string `yaml:"ports,omitempty"`
+type FirewallRuleMeta struct {
+	Name        string
+	Description string `yaml:"description,omitempty"`
+	Logging     bool   `yaml:"logging,omitempty"`
+	Priority    int    `yaml:"priority,omitempty"`
+	Rule        FirewallRule
 }
 
 // FirewallRule
 type FirewallRule struct {
-	Allow        []SourceOrTarget `yaml:"allow"`
-	Description  string           `yaml:"description,omitempty"`
-	Direction    string           `yaml:"-"`
-	Logging      bool             `yaml:"logging,omitempty"`
-	Network      string           `yaml:"network,omitempty"`
-	Priority     int              `yaml:"priority,omitempty"`
-	SourceRanges []string         `yaml:"sources,omitempty"`
-	Targets      []string         `yaml:"targets,omitempty"`
+	Allow      string `yaml:"allow,omitempty"`
+	Deny       string `yaml:"deny,omitempty"`
+	Direction  string `yaml:"-"`
+	Network    string `yaml:"net,omitempty"`
+	Sources    string `yaml:"sources,omitempty"`
+	SourceTags string `yaml:"source_tags,omitempty"`
+	TargetTags string `yaml:"target_tags,omitempty"`
 }
 
 type User struct {
@@ -140,6 +140,18 @@ func FinalizeArtifact(a *Artifact) {
 	})
 	sort.Slice(a.Bots, func(i, j int) bool {
 		return a.Bots[i].Account < a.Bots[j].Account
+	})
+	sort.Slice(a.Ingress, func(i, j int) bool {
+		if a.Ingress[i].Priority != a.Ingress[j].Priority {
+			return a.Ingress[i].Priority < a.Ingress[j].Priority
+		}
+		return a.Ingress[i].Name < a.Ingress[j].Name
+	})
+	sort.Slice(a.Egress, func(i, j int) bool {
+		if a.Egress[i].Priority != a.Egress[j].Priority {
+			return a.Egress[i].Priority < a.Egress[j].Priority
+		}
+		return a.Egress[i].Name < a.Egress[j].Name
 	})
 
 	//	a.ByGroup = map[string][]Membership{}

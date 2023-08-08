@@ -4,23 +4,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"sort"
 	"strings"
-
-	"k8s.io/klog/v2"
 )
+
+type gcloudTarget struct {
+	IPProtocol string   `json:"IPProtocol"`
+	Ports      []string `json:"ports"`
+}
 
 // gcloudFirewallFull is what is returned by "gcloud firewalls list"
 type gcloudFirewallFull struct {
-	Allowed []struct {
-		IPProtocol string   `json:"IPProtocol"`
-		Ports      []string `json:"ports"`
-	} `json:"allowed"`
-	CreationTimestamp string `json:"creationTimestamp"`
-	Description       string `json:"description"`
-	Direction         string `json:"direction"`
-	Disabled          bool   `json:"disabled"`
-	ID                string `json:"id"`
-	Kind              string `json:"kind"`
+	Allowed           []gcloudTarget `json:"allowed"`
+	Denied            []gcloudTarget `json:"denied"`
+	CreationTimestamp string         `json:"creationTimestamp"`
+	Description       string         `json:"description"`
+	Direction         string         `json:"direction"`
+	Disabled          bool           `json:"disabled"`
+	ID                string         `json:"id"`
+	Kind              string         `json:"kind"`
 	LogConfig         struct {
 		Enable bool `json:"enable"`
 	} `json:"logConfig"`
@@ -29,6 +31,7 @@ type gcloudFirewallFull struct {
 	Priority     int      `json:"priority"`
 	SelfLink     string   `json:"selfLink"`
 	SourceRanges []string `json:"sourceRanges"`
+	SourceTags   []string `json:"sourceTags,omitempty"`
 	TargetTags   []string `json:"targetTags,omitempty"`
 }
 
@@ -43,6 +46,21 @@ func (p *GoogleCloudProjectFirewall) Description() ProcessorDescription {
 			"Execute 'yacls --kind={{.Kind}} --project={{.Project}}'",
 		},
 	}
+}
+
+func gcloudTargetsString(targets []gcloudTarget) string {
+	ts := []string{}
+	for _, t := range targets {
+		if len(t.Ports) == 0 {
+			ts = append(ts, t.IPProtocol)
+			continue
+		}
+		for _, p := range t.Ports {
+			ts = append(ts, fmt.Sprintf("%s:%s", t.IPProtocol, p))
+		}
+	}
+	sort.Strings(ts)
+	return strings.Join(ts, ",")
 }
 
 func (p *GoogleCloudProjectFirewall) Process(c Config) (*Artifact, error) {
@@ -69,33 +87,39 @@ func (p *GoogleCloudProjectFirewall) Process(c Config) (*Artifact, error) {
 	err = json.Unmarshal(stdout, &full)
 
 	for _, r := range full {
-		fw := FirewallRule{
-			Description:  r.Description,
-			Direction:    r.Direction,
-			Logging:      r.LogConfig.Enable,
-			SourceRanges: r.SourceRanges,
-			Targets:      r.TargetTags,
+		if r.Disabled {
+			continue
 		}
-		net := r.Network[strings.LastIndex(r.Network, "/")+1:]
-		if net != "default" {
-			fw.Network = net
+		fw := FirewallRuleMeta{
+			Name:        r.Name,
+			Description: r.Description,
+			Logging:     r.LogConfig.Enable,
+			Priority:    r.Priority,
+			Rule: FirewallRule{
+				Direction:  r.Direction,
+				Sources:    strings.Join(r.SourceRanges, ","),
+				SourceTags: strings.Join(r.SourceTags, ","),
+				TargetTags: strings.Join(r.TargetTags, ","),
+				Allow:      gcloudTargetsString(r.Allowed),
+				Deny:       gcloudTargetsString(r.Denied),
+			},
 		}
 
-		for _, a := range r.Allowed {
-			sot := SourceOrTarget{Protocol: a.IPProtocol, Ports: a.Ports}
-			fw.Allow = append(fw.Allow, sot)
+		net := r.Network[strings.LastIndex(r.Network, "/")+1:]
+		if net != "default" {
+			fw.Rule.Network = net
 		}
 
 		switch r.Direction {
 		case "INGRESS":
-			a.Firewall.Ingress = append(a.Firewall.Ingress, fw)
+			a.Ingress = append(a.Ingress, fw)
 		case "EGRESS":
-			a.Firewall.Egress = append(a.Firewall.Egress, fw)
+			a.Egress = append(a.Egress, fw)
 		default:
 			return nil, fmt.Errorf("unexpected direction: %q", r.Direction)
 		}
 	}
 
-	klog.Infof("full: %+v", full)
+	//klog.Infof("full: %+v", full)
 	return a, err
 }
