@@ -21,8 +21,8 @@ type Artifact struct {
 	UserCount int    `yaml:"user_count,omitempty"`
 	Users     []User `yaml:"users,omitempty"`
 
-	Ingress []FirewallRuleMeta `yaml:"ingress"`
-	Egress  []FirewallRuleMeta `yaml:"egress"`
+	Ingress []FirewallRuleMeta `yaml:"ingress,omitempty"`
+	Egress  []FirewallRuleMeta `yaml:"egress,omitempty"`
 
 	BotCount        int                 `yaml:"bot_count,omitempty"`
 	Bots            []User              `yaml:"bots,omitempty"`
