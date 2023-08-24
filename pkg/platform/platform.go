@@ -141,6 +141,10 @@ func FinalizeArtifact(a *Artifact) {
 	sort.Slice(a.Bots, func(i, j int) bool {
 		return a.Bots[i].Account < a.Bots[j].Account
 	})
+	sort.Slice(a.Orgs, func(i, j int) bool {
+		return a.Orgs[i].Name < a.Orgs[j].Name
+	})
+
 	sort.Slice(a.Ingress, func(i, j int) bool {
 		if a.Ingress[i].Priority != a.Ingress[j].Priority {
 			return a.Ingress[i].Priority < a.Ingress[j].Priority
