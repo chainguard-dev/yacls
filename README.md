@@ -23,6 +23,7 @@ and is carefully tuned to make policy drift easy to notice.
 * Google Cloud Platform (gcloud)
 * Google Workspace (CSV)
 * Kolide (CSV)
+* Pulumi (HTML)
 * Secureframe (CSV)
 * Slack (CSV)
 * Vercel (HTML)

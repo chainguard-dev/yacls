@@ -298,6 +298,7 @@ func Available() []Processor {
 		&GoogleWorkspaceUsers{},
 		&KolideUsers{},
 		&OnePasswordTeam{},
+		&pulumiPeople{},
 		&SecureframePersonnel{},
 		&SlackMembers{},
 		&VercelMembers{},
