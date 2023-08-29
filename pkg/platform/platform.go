@@ -17,11 +17,15 @@ import (
 var SourceDateFormat = "2006-01-02"
 
 type Artifact struct {
-	Metadata        *Source
-	UserCount       int `yaml:"user_count"`
-	Users           []User
+	Metadata  *Source
+	UserCount int    `yaml:"user_count,omitempty"`
+	Users     []User `yaml:"users,omitempty"`
+
+	Ingress []FirewallRuleMeta `yaml:"ingress,omitempty"`
+	Egress  []FirewallRuleMeta `yaml:"egress,omitempty"`
+
 	BotCount        int                 `yaml:"bot_count,omitempty"`
-	Bots            []User              `yaml:",omitempty"`
+	Bots            []User              `yaml:"bots,omitempty"`
 	GroupCount      int                 `yaml:"group_count,omitempty"`
 	Groups          []Group             `yaml:"groups,omitempty"`
 	OrgCount        int                 `yaml:"org_count,omitempty"`
@@ -30,6 +34,25 @@ type Artifact struct {
 	Roles           map[string][]string `yaml:"roles,omitempty"`
 	PermissionCount int                 `yaml:"permission_count,omitempty"`
 	Permissions     map[string][]string `yaml:"permissions,omitempty"`
+}
+
+type FirewallRuleMeta struct {
+	Name        string
+	Description string `yaml:"description,omitempty"`
+	Logging     bool   `yaml:"logging,omitempty"`
+	Priority    int    `yaml:"priority,omitempty"`
+	Rule        FirewallRule
+}
+
+// FirewallRule
+type FirewallRule struct {
+	Allow        string `yaml:"allow,omitempty"`
+	Deny         string `yaml:"deny,omitempty"`
+	Network      string `yaml:"net,omitempty"`
+	Sources      string `yaml:"sources,omitempty"`
+	Destinations string `yaml:"destinations,omitempty"`
+	SourceTags   string `yaml:"source_tags,omitempty"`
+	TargetTags   string `yaml:"target_tags,omitempty"`
 }
 
 type User struct {
@@ -117,6 +140,22 @@ func FinalizeArtifact(a *Artifact) {
 	})
 	sort.Slice(a.Bots, func(i, j int) bool {
 		return a.Bots[i].Account < a.Bots[j].Account
+	})
+	sort.Slice(a.Orgs, func(i, j int) bool {
+		return a.Orgs[i].Name < a.Orgs[j].Name
+	})
+
+	sort.Slice(a.Ingress, func(i, j int) bool {
+		if a.Ingress[i].Priority != a.Ingress[j].Priority {
+			return a.Ingress[i].Priority < a.Ingress[j].Priority
+		}
+		return a.Ingress[i].Name < a.Ingress[j].Name
+	})
+	sort.Slice(a.Egress, func(i, j int) bool {
+		if a.Egress[i].Priority != a.Egress[j].Priority {
+			return a.Egress[i].Priority < a.Egress[j].Priority
+		}
+		return a.Egress[i].Name < a.Egress[j].Name
 	})
 
 	//	a.ByGroup = map[string][]Membership{}
@@ -207,6 +246,7 @@ type ProcessorDescription struct {
 	Steps            []string
 	OptionalFields   []string
 	MatchingFilename *regexp.Regexp
+	NoInputRequired  bool
 }
 
 type Config struct {
@@ -253,10 +293,12 @@ func Available() []Processor {
 		&GhostStaff{},
 		&GithubOrgMembers{},
 		&GoogleCloudProjectIAM{},
+		&GoogleCloudProjectFirewall{},
 		&GoogleWorkspaceUserAudit{},
 		&GoogleWorkspaceUsers{},
 		&KolideUsers{},
 		&OnePasswordTeam{},
+		&pulumiPeople{},
 		&SecureframePersonnel{},
 		&SlackMembers{},
 		&VercelMembers{},

@@ -76,7 +76,7 @@ func (p *GoogleWorkspaceUserAudit) Process(c Config) (*Artifact, error) {
 			u.TwoFactorDisabled = true
 		}
 
-		if strings.Contains(u.Account, "service-account") || strings.Contains(strings.ToLower(r.Name), "service account") {
+		if isBotName(u.Account) {
 			u.Name = r.Name
 			a.Bots = append(a.Bots, u)
 			continue
@@ -86,6 +86,28 @@ func (p *GoogleWorkspaceUserAudit) Process(c Config) (*Artifact, error) {
 	}
 
 	return a, nil
+}
+
+func isBotName(u string) bool {
+	u = strings.ToLower(u)
+
+	if strings.Contains(u, "service-account") {
+		return true
+	}
+	if strings.Contains(u, "service account") {
+		return true
+	}
+	if strings.HasSuffix(u, "-sa") {
+		return true
+	}
+	if strings.HasSuffix(u, "-bot") {
+		return true
+	}
+	if strings.HasSuffix(u, "robot") {
+		return true
+	}
+
+	return false
 }
 
 func extractDateFromHeaders(bs []byte) (string, string) {

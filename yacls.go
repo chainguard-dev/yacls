@@ -42,7 +42,7 @@ var (
 
 func main() {
 	// Pollutes --help with flags no one will need
-	// klog.InitFlags(nil)
+	klog.InitFlags(nil)
 	flag.Parse()
 
 	if *serveFlag || os.Getenv("SERVE_MODE") == "1" {
@@ -72,12 +72,13 @@ func main() {
 		}
 	}
 
-	if *kindFlag == "gcp" {
+	// these workflows don't require an input
+	if strings.HasPrefix(*kindFlag, "gcp") {
 		inputs = append(inputs, "")
 	}
 
 	if len(inputs) == 0 && *kindFlag == "" {
-		log.Fatalf("found no inputs to work with")
+		log.Fatalf("found no inputs or kind flag to work with")
 	}
 
 	gcpMemberCache := platform.NewGCPMemberCache()
@@ -94,6 +95,7 @@ func main() {
 			}
 		}
 
+		klog.Infof("kind: %q", kind)
 		var f io.ReadCloser
 		p, err := platform.New(kind)
 		if err != nil {
