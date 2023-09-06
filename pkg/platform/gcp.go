@@ -283,6 +283,9 @@ func (p *GoogleCloudProjectIAM) Process(c Config) (*Artifact, error) {
 		if strings.HasPrefix(u.Account, "domain:") {
 			continue
 		}
+		if strings.Contains(u.Account, ":") {
+			return nil, fmt.Errorf("unexpected account name type: %q", u.Account)
+		}
 
 		if strings.HasSuffix(u.Account, "gserviceaccount.com") {
 			a.Bots = append(a.Bots, *u)
