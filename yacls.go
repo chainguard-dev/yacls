@@ -10,8 +10,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/chainguard-dev/yacls/v2/pkg/compare"
 	"github.com/chainguard-dev/yacls/v2/pkg/platform"
 	"github.com/chainguard-dev/yacls/v2/pkg/server"
+	"github.com/gocarina/gocsv"
 
 	"gopkg.in/yaml.v3"
 	"k8s.io/klog/v2"
@@ -32,6 +34,7 @@ func kindHelp() string {
 
 var (
 	inputFlag              = flag.String("input", "", "path to input file")
+	compareFlag            = flag.String("compare", "", "path to file to compare against")
 	projectFlag            = flag.String("project", "", "specific project to process within the kind")
 	gcpIdentityProjectFlag = flag.String("gcp-identity-project", "", "project to use for GCP Cloud Identity lookups")
 	kindFlag               = flag.String("kind", "", fmt.Sprintf("kind of input to process. valid values: \n  * %s\n%s", strings.Join(platform.AvailableKinds(), "\n  * "), kindHelp()))
@@ -53,6 +56,50 @@ func main() {
 		os.Exit(0)
 	}
 
+	if *compareFlag != "" {
+		changes, err := compareSummary(*inputFlag, *compareFlag)
+		if err != nil {
+			log.Fatalf("compare failed: %v", err)
+		}
+
+		s, err := gocsv.MarshalString(&changes)
+		if err != nil {
+			log.Fatalf("marshal: %v", err)
+		}
+		fmt.Println(s)
+		os.Exit(0)
+	}
+
+	generate()
+}
+
+func compareSummary(fromPath string, toPath string) ([]compare.Change, error) {
+	cs := []compare.Change{}
+	bs, err := os.ReadFile(fromPath)
+	if err != nil {
+		return cs, fmt.Errorf("read: %w", err)
+	}
+
+	from := platform.Artifact{}
+	if err := yaml.Unmarshal(bs, &from); err != nil {
+		return cs, fmt.Errorf("unmarshal: %w", err)
+	}
+
+	bs, err = os.ReadFile(toPath)
+	if err != nil {
+		return cs, fmt.Errorf("read: %w", err)
+	}
+
+	to := platform.Artifact{}
+	if err := yaml.Unmarshal(bs, &to); err != nil {
+		return cs, fmt.Errorf("unmarshal: %w", err)
+	}
+
+	return compare.Summary(from, to)
+}
+
+// generate is the common path for generating and outputting YAML
+func generate() {
 	inputs := []string{}
 	if *inputFlag != "" {
 		inputs = append(inputs, *inputFlag)
