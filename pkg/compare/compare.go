@@ -61,13 +61,13 @@ func Summary(from platform.Artifact, to platform.Artifact) ([]Change, error) {
 
 		for _, p := range fu.Permissions {
 			if !slices.Contains(tu.Permissions, p) {
-				cs = append(cs, Change{Kind: kind, Entity: fu.Account, Mod: fmt.Sprintf("remove permission: %q", p), FromDate: fromDate, ToDate: toDate})
+				cs = append(cs, Change{Kind: kind, Entity: fu.Account, Mod: fmt.Sprintf("remove permission: %s", p), FromDate: fromDate, ToDate: toDate})
 			}
 		}
 
 		for _, p := range tu.Permissions {
 			if !slices.Contains(fu.Permissions, p) {
-				cs = append(cs, Change{Kind: kind, Entity: fu.Account, Mod: fmt.Sprintf("add permission: %q", p), FromDate: fromDate, ToDate: toDate})
+				cs = append(cs, Change{Kind: kind, Entity: fu.Account, Mod: fmt.Sprintf("add permission: %s", p), FromDate: fromDate, ToDate: toDate})
 			}
 		}
 	}
@@ -75,7 +75,7 @@ func Summary(from platform.Artifact, to platform.Artifact) ([]Change, error) {
 	for name, members := range fromGroups {
 		for _, m := range members {
 			if !slices.Contains(toGroups[name], m) {
-				cs = append(cs, Change{Kind: kind, Entity: m, Mod: fmt.Sprintf("left group: %q", name), FromDate: fromDate, ToDate: toDate})
+				cs = append(cs, Change{Kind: kind, Entity: m, Mod: fmt.Sprintf("left group: %s", name), FromDate: fromDate, ToDate: toDate})
 			}
 		}
 	}
@@ -83,7 +83,7 @@ func Summary(from platform.Artifact, to platform.Artifact) ([]Change, error) {
 	for name, members := range toGroups {
 		for _, m := range members {
 			if !slices.Contains(fromGroups[name], m) {
-				cs = append(cs, Change{Kind: kind, Entity: m, Mod: fmt.Sprintf("joined group: %q", name), FromDate: fromDate, ToDate: toDate})
+				cs = append(cs, Change{Kind: kind, Entity: m, Mod: fmt.Sprintf("joined group: %s", name), FromDate: fromDate, ToDate: toDate})
 			}
 		}
 	}

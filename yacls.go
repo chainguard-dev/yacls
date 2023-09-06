@@ -13,6 +13,7 @@ import (
 	"github.com/chainguard-dev/yacls/v2/pkg/compare"
 	"github.com/chainguard-dev/yacls/v2/pkg/platform"
 	"github.com/chainguard-dev/yacls/v2/pkg/server"
+	"github.com/gocarina/gocsv"
 
 	"gopkg.in/yaml.v3"
 	"k8s.io/klog/v2"
@@ -60,9 +61,12 @@ func main() {
 		if err != nil {
 			log.Fatalf("compare failed: %v", err)
 		}
-		for _, c := range changes {
-			fmt.Printf("%v\n", c)
+
+		s, err := gocsv.MarshalString(&changes)
+		if err != nil {
+			log.Fatalf("marshal: %v", err)
 		}
+		fmt.Println(s)
 		os.Exit(0)
 	}
 
