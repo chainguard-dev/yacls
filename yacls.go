@@ -57,11 +57,33 @@ func main() {
 	}
 
 	if *compareFlag != "" {
-		changes, err := compareSummary(*inputFlag, *compareFlag)
-		if err != nil {
-			log.Fatalf("compare failed: %v", err)
-		}
+		changes := []compare.Change{}
 
+		if *inDirFlag == "" {
+			cs, err := compareSummary(*inputFlag, *compareFlag)
+			if err != nil {
+				log.Fatalf("compare failed: %v", err)
+			}
+			changes = append(changes, cs...)
+		} else {
+			files, err := os.ReadDir(*inDirFlag)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			for _, file := range files {
+				if file.IsDir() {
+					continue
+				}
+				src := filepath.Join(*inDirFlag, file.Name())
+				dest := filepath.Join(*compareFlag, file.Name())
+				cs, err := compareSummary(src, dest)
+				if err != nil {
+					log.Fatalf("compare failed: %v", err)
+				}
+				changes = append(changes, cs...)
+			}
+		}
 		s, err := gocsv.MarshalString(&changes)
 		if err != nil {
 			log.Fatalf("marshal: %v", err)
