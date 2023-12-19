@@ -28,10 +28,11 @@ func (p *SlackMembers) Description() ProcessorDescription {
 }
 
 type slackMemberRecord struct {
-	Username string `csv:"username"`
-	Email    string `csv:"email"`
-	Status   string `csv:"status"`
-	FullName string `csv:"fullname"`
+	Username    string `csv:"username"`
+	Email       string `csv:"email"`
+	Status      string `csv:"status"`
+	FullName    string `csv:"fullname"`
+	DisplayName string `csv:"displayname"`
 }
 
 func (p *SlackMembers) Process(c Config) (*Artifact, error) {
@@ -52,10 +53,25 @@ func (p *SlackMembers) Process(c Config) (*Artifact, error) {
 			continue
 		}
 
+		name := strings.TrimSpace(r.FullName)
+		if name == "" {
+			name = strings.TrimSpace(r.DisplayName)
+		}
+
+		role := r.Status
+		account := r.Email
+		if role == "Bot" {
+			role = ""
+			account = r.Username + "!" + r.Email
+		}
+		if role == "Member" {
+			role = ""
+		}
+
 		u := User{
-			Account: r.Email,
-			Name:    strings.TrimSpace(r.FullName),
-			Role:    r.Status,
+			Account: account,
+			Name:    name,
+			Role:    role,
 		}
 
 		if r.Status == "Bot" {

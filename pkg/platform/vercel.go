@@ -54,7 +54,7 @@ func (p *VercelMembers) Process(c Config) (*Artifact, error) {
 	doc.Find("div[data-geist-entity]").Each(func(i int, s *goquery.Selection) {
 		fmt.Printf("attr=%s\n", s.AttrOr("data-testid", "unknown"))
 
-		email := s.Find("p[type=secondary]").Text()
+		email := s.Find("div[type=secondary]").Text()
 		roles := []string{}
 
 		s.Find("option").Each(func(i int, opt *goquery.Selection) {
