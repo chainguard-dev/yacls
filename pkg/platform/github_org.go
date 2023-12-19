@@ -30,10 +30,11 @@ func (p *GithubOrgMembers) Description() ProcessorDescription {
 }
 
 type githubMemberRecord struct {
-	Login      string `csv:"login"`
-	Name       string `csv:"name"`
-	Role       string `csv:"role"`
-	SAMLNameID string `csv:"saml_name_id"`
+	Login            string `csv:"login"`
+	Name             string `csv:"name"`
+	Role             string `csv:"role"`
+	TwoFactorEnabled string `csv:"tfa_enabled"`
+	SAMLNameID       string `csv:"saml_name_id"`
 }
 
 func (p *GithubOrgMembers) Process(c Config) (*Artifact, error) {
@@ -72,11 +73,21 @@ func (p *GithubOrgMembers) Process(c Config) (*Artifact, error) {
 			role = ""
 		}
 
+		if r.SAMLNameID == "" {
+			r.SAMLNameID = "NOT_CONFIGURED"
+		}
+
+		twofad := false
+		if r.TwoFactorEnabled != "true" {
+			twofad = true
+		}
+
 		u := User{
-			Account: r.Login,
-			Name:    strings.TrimSpace(r.Name),
-			Role:    role,
-			SSO:     r.SAMLNameID,
+			Account:           r.Login,
+			Name:              strings.TrimSpace(r.Name),
+			Role:              role,
+			SSO:               r.SAMLNameID,
+			TwoFactorDisabled: twofad,
 		}
 
 		if strings.HasSuffix(u.Name, "Bot") || strings.HasSuffix(u.Account, "Bot") {
