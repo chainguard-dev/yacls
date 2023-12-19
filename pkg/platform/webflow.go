@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -22,6 +23,7 @@ func (p *WebflowMembers) Description() ProcessorDescription {
 			"Collect resulting .html file for analysis (the other files are not necessary)",
 			"Execute 'yacls --kind={{.Kind}} --input={{.Path}}'",
 		},
+		MatchingFilename: regexp.MustCompile(`webflow.*html$`),
 	}
 }
 
