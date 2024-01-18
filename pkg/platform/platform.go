@@ -18,22 +18,36 @@ var SourceDateFormat = "2006-01-02"
 
 type Artifact struct {
 	Metadata  *Source
-	UserCount int    `yaml:"user_count,omitempty"`
+	UserCount int    `yaml:"users_total,omitempty"`
 	Users     []User `yaml:"users,omitempty"`
 
 	Ingress []FirewallRuleMeta `yaml:"ingress,omitempty"`
 	Egress  []FirewallRuleMeta `yaml:"egress,omitempty"`
 
-	BotCount        int                 `yaml:"bot_count,omitempty"`
-	Bots            []User              `yaml:"bots,omitempty"`
-	GroupCount      int                 `yaml:"group_count,omitempty"`
-	Groups          []Group             `yaml:"groups,omitempty"`
-	OrgCount        int                 `yaml:"org_count,omitempty"`
-	Orgs            []Group             `yaml:"orgs,omitempty"`
-	RoleCount       int                 `yaml:"role_count,omitempty"`
-	Roles           map[string][]string `yaml:"roles,omitempty"`
-	PermissionCount int                 `yaml:"permission_count,omitempty"`
-	Permissions     map[string][]string `yaml:"permissions,omitempty"`
+	BotCount int    `yaml:"bots_total,omitempty"`
+	Bots     []User `yaml:"bots,omitempty"`
+
+	ServiceAccountCount int    `yaml:"service_accounts_total,omitempty"`
+	ServiceAccounts     []User `yaml:"service_accounts,omitempty"`
+
+	GroupCount  int                 `yaml:"groups_total,omitempty"`
+	Groups      []Group             `yaml:"groups,omitempty"`
+	OrgCount    int                 `yaml:"orgs_total,omitempty"`
+	Orgs        []Group             `yaml:"orgs,omitempty"`
+	RoleCount   int                 `yaml:"roles_total,omitempty"`
+	Roles       map[string][]string `yaml:"roles,omitempty"`
+	Permissions Permissions         `yaml:"permissions,omitempty"`
+
+	Memberships map[string]string `yaml:"membership,omitempty"`
+}
+
+type Permissions struct {
+	UserCount           int              `yaml:"users_total,omitempty"`
+	Users               map[string]User  `yaml:"users,omitempty"`
+	ServiceAccountCount int              `yaml:"service_accounts_total,omitempty"`
+	ServiceAccounts     map[string]User  `yaml:"service_accounts,omitempty"`
+	GroupCount          int              `yaml:"groups_total,omitempty"`
+	Groups              map[string]Group `yaml:"groups,omitempty"`
 }
 
 type FirewallRuleMeta struct {
@@ -56,10 +70,12 @@ type FirewallRule struct {
 }
 
 type User struct {
-	Account           string
+	Account           string       `yaml:",omitempty"`
 	Name              string       `yaml:",omitempty"`
 	Role              string       `yaml:",omitempty"`
+	Roles             []string     `yaml:"roles,omitempty"`
 	Permissions       []string     `yaml:",omitempty"`
+	Project           string       `yaml:"project,omitempty"`
 	Status            string       `yaml:",omitempty"`
 	Groups            []Membership `yaml:",omitempty"`
 	Org               string       `yaml:",omitempty"`
@@ -71,7 +87,8 @@ type Group struct {
 	Name        string   `yaml:",omitempty"`
 	Description string   `yaml:",omitempty"`
 	Permissions []string `yaml:"permissions,omitempty"`
-	Members     []string
+	Roles       []string `yaml:"roles,omitempty"`
+	Members     []string `yaml:"members,omitempty"`
 }
 
 type Membership struct {
@@ -160,52 +177,58 @@ func FinalizeArtifact(a *Artifact) {
 
 	//	a.ByGroup = map[string][]Membership{}
 	a.Roles = map[string][]string{}
-	a.Permissions = map[string][]string{}
+	//	a.Permissions = map[string][]string{}
 
 	allUsers := []User{}
 	allUsers = append(allUsers, a.Users...)
 	allUsers = append(allUsers, a.Bots...)
-	hasPermission := map[string]map[string]bool{}
+	//	hasPermission := map[string]map[string]bool{}
 
 	for _, u := range allUsers {
 		if u.Role != "" {
 			a.Roles[u.Role] = append(a.Roles[u.Role], u.Account)
 		}
 
-		perms := u.Permissions
-		for _, p := range perms {
-			if a.Permissions[p] == nil {
-				a.Permissions[p] = []string{}
-				hasPermission[p] = map[string]bool{}
-			}
-			a.Permissions[p] = append(a.Permissions[p], u.Account)
-			hasPermission[p][u.Account] = true
-		}
-	}
-
-	// Deal with inherited permissions
-	for _, g := range a.Groups {
-		for _, m := range g.Members {
-			for _, p := range g.Permissions {
-				if hasPermission[p] == nil {
+		/*
+			perms := u.Permissions
+			for _, p := range perms {
+				if a.Permissions[p] == nil {
+					a.Permissions[p] = []string{}
 					hasPermission[p] = map[string]bool{}
 				}
+				a.Permissions[p] = append(a.Permissions[p], u.Account)
+				hasPermission[p][u.Account] = true
+			}
+		*/
+	}
 
-				if !hasPermission[p][m] {
-					a.Permissions[p] = append(a.Permissions[p], m)
-					hasPermission[p][m] = true
+	/*
+		// Deal with inherited permissions
+		for _, g := range a.Groups {
+			for _, m := range g.Members {
+				for _, p := range g.Permissions {
+					if hasPermission[p] == nil {
+						hasPermission[p] = map[string]bool{}
+					}
+
+					if !hasPermission[p][m] {
+						a.Permissions[p] = append(a.Permissions[p], m)
+						hasPermission[p][m] = true
+					}
 				}
 			}
 		}
-	}
+	*/
 
-	for i := range a.Permissions {
-		sort.Strings(a.Permissions[i])
-	}
+	/*
+		for i := range a.Permissions {
+			sort.Strings(a.Permissions[i])
+		}
+	*/
 
 	a.UserCount = len(a.Users)
 	a.BotCount = len(a.Bots)
-	a.PermissionCount = len(a.Permissions)
+	// a.PermissionCount = len(a.Permissions)
 	a.RoleCount = len(a.Roles)
 	a.GroupCount = len(a.Groups)
 	a.OrgCount = len(a.Orgs)
@@ -246,7 +269,9 @@ type ProcessorDescription struct {
 	Steps            []string
 	OptionalFields   []string
 	MatchingFilename *regexp.Regexp
-	NoInputRequired  bool
+	Filter           map[string][]string `yaml:"filter"`
+
+	NoInputRequired bool
 }
 
 type Config struct {
