@@ -19,7 +19,7 @@ type DockerHubMembers struct{}
 
 func (p *DockerHubMembers) Description() ProcessorDescription {
 	return ProcessorDescription{
-		Kind: "DockerHub",
+		Kind: "docker_hub",
 		Name: "DockerHub Members",
 		Steps: []string{
 			"Open https://hub.docker.com/orgs/<org>/members ",
