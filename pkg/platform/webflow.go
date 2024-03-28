@@ -60,15 +60,15 @@ func (p *WebflowMembers) Process(c Config) (*Artifact, error) {
 			attr, _ := p.Attr("data-automation-id")
 			log.Printf("p=%s, attr=%s", p.Text(), attr)
 
-			if strings.HasPrefix(attr, "member") {
+			if strings.Contains(attr, "email") {
+				account, _, _ = strings.Cut(p.Text(), "(")
+				account = strings.TrimSpace(account)
+				log.Printf("account=%s", account)
+			} else {
 				log.Printf("member cell=%s", p.Text())
 				name, _, _ = strings.Cut(p.Text(), "(")
 				name = strings.TrimSpace(name)
 				log.Printf("name=%s", name)
-			} else {
-				account, _, _ = strings.Cut(p.Text(), "(")
-				account = strings.TrimSpace(account)
-				log.Printf("account=%s", account)
 			}
 		})
 
@@ -108,7 +108,6 @@ func (p *WebflowMembers) Process(c Config) (*Artifact, error) {
 			name := ""
 			account := ""
 			perms := []string{}
-
 			tr.Find("div").Each(func(i int, t *goquery.Selection) {
 				if t.Text() == "" {
 					return
