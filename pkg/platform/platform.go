@@ -72,6 +72,7 @@ type FirewallRule struct {
 type User struct {
 	Account           string       `yaml:",omitempty"`
 	Name              string       `yaml:",omitempty"`
+	Email             string       `yaml:",omitempty"`
 	Role              string       `yaml:",omitempty"`
 	Roles             []string     `yaml:"roles,omitempty"`
 	Permissions       []string     `yaml:",omitempty"`
@@ -315,6 +316,7 @@ func Available() []Processor {
 	// Alphabetical
 	return []Processor{
 		&Auth0Members{},
+		&DockerHubMembers{},
 		&GhostStaff{},
 		&GithubOrgMembers{},
 		&GoogleCloudProjectIAM{},

@@ -42,12 +42,11 @@ func (p *Auth0Members) Process(c Config) (*Artifact, error) {
 	}
 
 	// Find the members
-	doc.Find("tr").Each(func(i int, tr *goquery.Selection) {
+	doc.Find("tr").Each(func(_ int, tr *goquery.Selection) {
 		name := ""
 		account := ""
-		role := ""
 
-		tr.Find("p").Each(func(i int, p *goquery.Selection) {
+		tr.Find("p").Each(func(_ int, p *goquery.Selection) {
 			attr, _ := p.Attr("class")
 			log.Printf("p=%s, attr=%s", p.Text(), attr)
 
@@ -63,7 +62,7 @@ func (p *Auth0Members) Process(c Config) (*Artifact, error) {
 		})
 
 		s := tr.Find("td").Eq(1)
-		role = strings.ToLower(s.Text())
+		role := strings.ToLower(s.Text())
 
 		if account != "" {
 			a.Users = append(a.Users, User{Account: account, Name: name, Role: role})
