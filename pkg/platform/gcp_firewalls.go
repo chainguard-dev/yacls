@@ -82,7 +82,7 @@ func (p *GoogleCloudProjectFirewall) Process(c Config) (*Artifact, error) {
 		return nil, fmt.Errorf("%s: %w", cmd, err)
 	}
 
-	//klog.Infof("output: %s", stdout)
+	// klog.Infof("output: %s", stdout)
 
 	full := []gcloudFirewallFull{}
 	err = json.Unmarshal(stdout, &full)
@@ -144,6 +144,6 @@ func (p *GoogleCloudProjectFirewall) Process(c Config) (*Artifact, error) {
 		},
 	})
 
-	//klog.Infof("full: %+v", full)
+	// klog.Infof("full: %+v", full)
 	return a, err
 }

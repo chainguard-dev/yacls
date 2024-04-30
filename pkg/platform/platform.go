@@ -80,6 +80,7 @@ type User struct {
 	Status            string       `yaml:",omitempty"`
 	Groups            []Membership `yaml:",omitempty"`
 	Org               string       `yaml:",omitempty"`
+	Deleted           bool         `yaml:",omitempty"`
 	TwoFactorDisabled bool         `yaml:"two_factor_disabled,omitempty"`
 	SSO               string       `yaml:"sso,omitempty"`
 }

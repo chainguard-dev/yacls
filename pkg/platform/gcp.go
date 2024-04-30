@@ -73,17 +73,28 @@ type gcpIdentity struct {
 	Email       string
 	DisplayName string
 	Disabled    bool
+	Deleted     bool
 
 	IsServiceAccount bool
 }
 
 // parse <kind>:<name>@<domain>
 func parseGCPIdentity(s string) gcpIdentity {
-	kind, id, found := strings.Cut(s, ":")
-	if !found {
-		id = s
-		kind = "unknown"
+	kind := "unknown"
+	id := s
+
+	deleted := false
+	if strings.HasPrefix(s, "deleted:") {
+		deleted = true
 	}
+
+	if x := strings.LastIndex(s, ":"); x > 0 {
+		kind = s[:x]
+		id = s[x+1:]
+	}
+
+	// extra annotation for deleted users
+	id, _, _ = strings.Cut(id, "?uid=")
 	name, domain, _ := strings.Cut(id, "@")
 
 	if strings.HasSuffix(domain, "gserviceaccount.com") {
@@ -95,6 +106,7 @@ func parseGCPIdentity(s string) gcpIdentity {
 		Domain:   domain,
 		Email:    fmt.Sprintf("%s@%s", name, domain),
 		Username: name,
+		Deleted:  deleted,
 	}
 }
 
@@ -479,12 +491,13 @@ func (p *GoogleCloudProjectIAM) Process(c Config) (*Artifact, error) {
 				switch id.Kind {
 				case "domain":
 					continue
-				case "serviceAccount":
+				case "serviceAccount", "deleted:serviceAccount":
 					if users[bindMember] == nil {
 						sa := sas[id.Email]
 						klog.Infof("service account info for %q: %+v", id.Email, sa)
 						u := &User{
-							Name: sa.DisplayName,
+							Name:    sa.DisplayName,
+							Deleted: id.Deleted,
 						}
 
 						// Attempt to distinguish what GCP project this SA came from
@@ -494,6 +507,9 @@ func (p *GoogleCloudProjectIAM) Process(c Config) (*Artifact, error) {
 						}
 
 						users[bindMember] = u
+					}
+					if id.Deleted {
+						users[bindMember].Deleted = true
 					}
 					users[bindMember].Roles = append(users[bindMember].Roles, role.String())
 					memberships[key] = append(memberships[bindMember], "DIRECT")
@@ -522,7 +538,7 @@ func (p *GoogleCloudProjectIAM) Process(c Config) (*Artifact, error) {
 						memberships[key] = append(memberships[key], shortName(id, orgs))
 					}
 				default:
-					return a, fmt.Errorf("unknown binding type: %v", bindMember)
+					return a, fmt.Errorf("unknown binding type %v: %v", id.Kind, bindMember)
 
 				}
 
