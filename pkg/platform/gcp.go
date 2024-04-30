@@ -93,11 +93,9 @@ func parseGCPIdentity(s string) gcpIdentity {
 		id = s[x+1:]
 	}
 
-
 	// extra annotation for deleted users
 	id, _, _ = strings.Cut(id, "?uid=")
 	name, domain, _ := strings.Cut(id, "@")
-
 
 	if strings.HasSuffix(domain, "gserviceaccount.com") {
 		kind = "serviceAccount"
@@ -108,7 +106,7 @@ func parseGCPIdentity(s string) gcpIdentity {
 		Domain:   domain,
 		Email:    fmt.Sprintf("%s@%s", name, domain),
 		Username: name,
-		Deleted: deleted,
+		Deleted:  deleted,
 	}
 }
 
@@ -498,7 +496,7 @@ func (p *GoogleCloudProjectIAM) Process(c Config) (*Artifact, error) {
 						sa := sas[id.Email]
 						klog.Infof("service account info for %q: %+v", id.Email, sa)
 						u := &User{
-							Name: sa.DisplayName,
+							Name:    sa.DisplayName,
 							Deleted: id.Deleted,
 						}
 
