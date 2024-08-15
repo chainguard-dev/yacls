@@ -44,10 +44,15 @@ func (p *pulumiPeople) Process(c Config) (*Artifact, error) {
 
 	// Find the People
 	doc.Find(".cdk-row").Each(func(i int, s *goquery.Selection) {
-		email := strings.TrimSpace(s.Find("p.login").Text())
+		email := strings.TrimSpace(s.Find("a.login").Text())
 		name := strings.TrimSpace(s.Find("p.name").Text())
 		role := strings.TrimSpace(s.Find("span.ng-star-inserted").Text())
-		a.Users = append(a.Users, User{Account: email, Name: name, Role: role})
+		status := strings.TrimSpace(s.Find("div.invite-status-container").Text())
+		// bad workaround for "membermembermember" drop-down
+		if strings.HasPrefix(role, "member") {
+			role = "member"
+		}
+		a.Users = append(a.Users, User{Account: email, Name: name, Role: role, Status: status})
 	})
 
 	return a, nil
