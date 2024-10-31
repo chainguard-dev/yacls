@@ -18,6 +18,7 @@ and is carefully tuned to make policy drift easy to notice.
 
 * 1Password (CSV)
 * Auth0 (HTML)
+* Cloudflare (HTML)
 * Docker Hub (HTML)
 * Ghost Blog (HTML)
 * Github Org Members (CSV)
