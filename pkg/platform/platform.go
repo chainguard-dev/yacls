@@ -331,6 +331,7 @@ func Available() []Processor {
 		&SlackMembers{},
 		&VercelMembers{},
 		&WebflowMembers{},
+		&cloudflareMembers{},
 	}
 }
 
