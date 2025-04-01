@@ -88,6 +88,15 @@ func parseGCPIdentity(s string) gcpIdentity {
 		deleted = true
 	}
 
+	if strings.HasPrefix(s, "principal:") {
+		// Example: principal://iam.googleapis.com/projects/.../subject/...
+		return gcpIdentity{
+			Kind:     "principal",
+			Email:    strings.TrimPrefix(s, "principal://"),
+			Username: strings.TrimPrefix(s, "principal://"),
+		}
+	}
+
 	if x := strings.LastIndex(s, ":"); x > 0 {
 		kind = s[:x]
 		id = s[x+1:]
@@ -491,6 +500,13 @@ func (p *GoogleCloudProjectIAM) Process(c Config) (*Artifact, error) {
 				switch id.Kind {
 				case "domain":
 					continue
+				case "principal":
+					if users[bindMember] == nil {
+						u := &User{}
+						users[bindMember] = u
+					}
+					users[bindMember].Roles = append(users[bindMember].Roles, role.String())
+					memberships[key] = append(memberships[bindMember], "DIRECT")
 				case "serviceAccount", "deleted:serviceAccount":
 					if users[bindMember] == nil {
 						sa := sas[id.Email]
@@ -565,6 +581,7 @@ func (p *GoogleCloudProjectIAM) Process(c Config) (*Artifact, error) {
 
 	a.Permissions.ServiceAccounts = map[string]User{}
 	a.Permissions.Users = map[string]User{}
+	a.Permissions.Principals = map[string]User{}
 
 	for identity, u := range users {
 		gid := parseGCPIdentity(identity)
@@ -578,6 +595,12 @@ func (p *GoogleCloudProjectIAM) Process(c Config) (*Artifact, error) {
 				u.Name = ""
 			}
 			a.Permissions.ServiceAccounts[key] = *u
+			continue
+		}
+
+		if gid.Kind == "principal" {
+			key = strings.ReplaceAll(key, "//", "")
+			a.Permissions.Principals[key] = *u
 			continue
 		}
 
