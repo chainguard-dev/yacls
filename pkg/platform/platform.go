@@ -31,7 +31,7 @@ type Artifact struct {
 	ServiceAccounts     []User `yaml:"service_accounts,omitempty"`
 
 	PrincipalCount int    `yaml:"principals_total,omitempty"`
-	Principal     []User `yaml:"principals,omitempty"`
+	Principal      []User `yaml:"principals,omitempty"`
 
 	GroupCount  int                 `yaml:"groups_total,omitempty"`
 	Groups      []Group             `yaml:"groups,omitempty"`
@@ -49,8 +49,8 @@ type Permissions struct {
 	Users               map[string]User  `yaml:"users,omitempty"`
 	ServiceAccountCount int              `yaml:"service_accounts_total,omitempty"`
 	ServiceAccounts     map[string]User  `yaml:"service_accounts,omitempty"`
-	PrincipalCount           int              `yaml:"principals_total,omitempty"`
-	Principals               map[string]User  `yaml:"principals,omitempty"`
+	PrincipalCount      int              `yaml:"principals_total,omitempty"`
+	Principals          map[string]User  `yaml:"principals,omitempty"`
 	GroupCount          int              `yaml:"groups_total,omitempty"`
 	Groups              map[string]Group `yaml:"groups,omitempty"`
 }
