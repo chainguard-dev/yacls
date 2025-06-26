@@ -1,6 +1,7 @@
 module github.com/chainguard-dev/yacls/v2
 
-go 1.20
+go 1.23.0
+
 toolchain go1.24.1
 
 require (
@@ -13,5 +14,5 @@ require (
 require (
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/go-logr/logr v1.2.0 // indirect
-	golang.org/x/net v0.36.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
 )
