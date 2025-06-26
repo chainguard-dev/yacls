@@ -30,11 +30,12 @@ func (p *VercelMembers) Description() ProcessorDescription {
 }
 
 var vercelRoles = map[string]bool{
-	"owner":     true,
-	"member":    true,
-	"developer": true,
-	"billing":   true,
-	"viewer":    true,
+	"owner":       true,
+	"member":      true,
+	"developer":   true,
+	"billing":     true,
+	"viewer":      true,
+	"contributor": true,
 }
 
 func (p *VercelMembers) Process(c Config) (*Artifact, error) {
@@ -67,27 +68,30 @@ func (p *VercelMembers) Process(c Config) (*Artifact, error) {
 			vals := []string{}
 
 			s.Find("span").Each(func(i int, p *goquery.Selection) {
+				fmt.Printf("span=%s\n", p.Text())
 				if vercelRoles[strings.ToLower(p.Text())] {
 					vals = append(vals, strings.ToLower(p.Text()))
 				}
 			})
 
 			s.Find("p").Each(func(i int, p *goquery.Selection) {
+				fmt.Printf("p=%s\n", p.Text())
 				if vercelRoles[strings.ToLower(p.Text())] {
 					vals = append(vals, strings.ToLower(p.Text()))
 				}
 			})
 
-			roles = append(roles, vals[0])
+			if len(vals) == 0 {
+				fmt.Printf("unable to find known role for %s\n", s.Text())
+			} else {
+				roles = append(roles, vals[0])
+			}
 		}
 
-		role := roles[0]
-
-		if len(roles) > 1 {
-			// At the moment, we can't tell which option is selected
-			role = strings.Join(roles, " or ")
+		role := "unknown"
+		if len(roles) > 0 {
+			role = roles[0]
 		}
-
 		a.Users = append(a.Users, User{Account: email, Role: role})
 	})
 
