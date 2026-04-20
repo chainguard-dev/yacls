@@ -498,7 +498,7 @@ func (p *GoogleCloudProjectIAM) Process(c Config) (*Artifact, error) {
 				key := shortName(id, orgs)
 
 				switch id.Kind {
-				case "domain":
+				case "domain", "deleted:group":
 					continue
 				case "principal":
 					if users[bindMember] == nil {
